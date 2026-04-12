@@ -299,6 +299,7 @@ Diagnostics conformance is validated by a centralized test matrix (`DiagnosticsC
 Diagnostics metadata is centralized in an internal catalog (`ContractDiagnostics`) to keep operation/code values consistent across handlers, router wrapping, and tests.
 `ContractDiagnostics` also provides operation-scoped builder helpers (`BuildImportMessage`, `BuildExportMessage`, `BuildConfigMessage`) to reduce call-site drift.
 Unknown diagnostics operations or codes are rejected during message construction to prevent non-catalog values from leaking into runtime telemetry.
+Enforcement tests also validate that unknown operation/code values are rejected and that all catalog-defined operations/codes remain recognized.
 
 ## Architecture
 
