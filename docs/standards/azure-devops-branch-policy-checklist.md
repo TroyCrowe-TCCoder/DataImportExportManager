@@ -4,6 +4,13 @@
 Use this checklist to enforce the repository flow:
 `local branch -> remote branch -> PR to dev -> PR to master -> delivery on master merge`.
 
+## Quick Start (5-Minute Setup)
+1. Set default branch to `dev`.
+2. Configure `dev` branch policies (PR required + build validation).
+3. Configure `master` branch policies (PR required + owner approval).
+4. Set `dev` and `master` branch security to restrict direct push/bypass for non-owner users.
+5. Validate flow with one test PR to `dev` and one promotion PR from `dev` to `master`.
+
 ## Branch Targets
 - `dev`: integration and validation gate
 - `master`: promotion and delivery gate
@@ -15,6 +22,13 @@ Use this checklist to enforce the repository flow:
 4. Open branch context menu -> `Security` for both `dev` and `master`.
 5. Apply contributor restrictions (`Contribute`, `Bypass policies`, `Force push`) and owner permissions.
 6. Save changes and verify policy scopes are set to the intended branch refs.
+
+## Optional CLI Mapping (Reference)
+- If automating policy setup, use Azure DevOps CLI policy commands as a mapping for:
+  - required reviewers
+  - build validation
+  - merge strategy constraints
+- Keep the UI checklist above as the source of truth for expected policy outcomes.
 
 ## `dev` Branch Policy Checklist
 - Require pull requests for all changes.

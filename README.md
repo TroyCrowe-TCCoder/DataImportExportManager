@@ -84,6 +84,14 @@ dotnet build
 dotnet test
 ```
 
+### Branch Governance and Delivery Flow
+
+Repository governance follows:
+`local branch -> remote branch -> PR to dev -> PR to master -> delivery on master merge`.
+
+For required Azure DevOps branch-policy settings and operator steps, see:
+`docs/standards/azure-devops-branch-policy-checklist.md`.
+
 ## Usage
 
 ### Dependency Injection (Recommended)
