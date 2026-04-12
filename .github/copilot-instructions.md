@@ -29,7 +29,7 @@ This repository instruction file should contain only project-specific context, d
 - All importer/exporter selection must be deterministic; the UI provides the format, and this utility should resolve and execute the appropriate importer/exporter based on explicit format input.
 
 ## Repository Branching and Check-In Governance
-- Branch flow is enforced as: `local branch` -> `remote branch` -> PR to `dev` -> PR to `master` -> delivery on `master` merge.
+- Branch flow is enforced as: `local branch` -> `remote branch` -> PR to `dev` -> PR to `master`.
 - Contributors other than repository owner must open pull requests from their branch into `dev` only.
 - Direct pushes to `dev` and `master` are disallowed for non-owner users.
 - Merge from `dev` to `master` requires repository owner approval.
