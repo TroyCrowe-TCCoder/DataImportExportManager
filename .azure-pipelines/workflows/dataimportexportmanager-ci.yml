@@ -1,0 +1,34 @@
+trigger:
+  branches:
+    include:
+      - master
+
+pr:
+  branches:
+    include:
+      - master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  BuildConfiguration: 'Release'
+
+steps:
+  - checkout: self
+
+  - task: UseDotNet@2
+    displayName: 'Use .NET SDK 10.x'
+    inputs:
+      packageType: 'sdk'
+      version: '10.0.x'
+      includePreviewVersions: true
+
+  - script: dotnet restore DataImportExportManager.sln
+    displayName: 'dotnet restore'
+
+  - script: dotnet build DataImportExportManager.sln --configuration $(BuildConfiguration) --no-restore
+    displayName: 'dotnet build'
+
+  - script: dotnet test DataImportExportManager.sln --configuration $(BuildConfiguration) --no-build --verbosity normal
+    displayName: 'dotnet test'

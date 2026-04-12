@@ -33,7 +33,12 @@ Latest validation state:
 | Testing and quality | Complete | Broad xUnit coverage including contract, integration-style DI tests, diagnostics conformance tests, and docs-sync guards; latest run `176/176`. | Maintain coverage parity for each new public API/diagnostic code. |
 | Observability and diagnostics | Complete | Structured diagnostics prefix (`[DIXMGR:...]`), centralized catalog (`ContractDiagnostics`), operation/code documentation, and conformance enforcement tests. | Keep catalog/tables/tests synchronized when adding codes. |
 | Performance and resilience | Complete (current scope) | Async import/export paths, size guards, deterministic parsing/export behavior, and existing performance-conscious implementation patterns retained. | Add targeted benchmarks only if regression signal appears. |
-| CI/CD and delivery | Partial | Local build + full test validation consistently pass; manual commit/push cadence in use. | Add/expand CI workflow to enforce test/build on PRs and branch protection. |
+| CI/CD and delivery | Partial | Azure DevOps CI workflow added at `.azure-pipelines/workflows/dataimportexportmanager-ci.yml` with PR/`master` restore, build, and test execution. | Configure branch policies to require CI status checks before merge. |
+
+## Required CI Status Checks (Azure DevOps)
+- Require successful run of `dataimportexportmanager-ci.yml` for pull requests targeting `master`.
+- Require successful completion of all workflow steps: `dotnet restore`, `dotnet build`, and `dotnet test`.
+- Keep diagnostics conformance coverage enforced through the existing test suite included in `dotnet test`.
 
 ## Session Handoff / Resume Notes
 To continue from this exact checkpoint:
@@ -47,10 +52,10 @@ Useful verification commands:
 - `git status --short`
 
 ## Next Planned Bundle Candidate
-Add CI enforcement for the diagnostics contract:
-1. Add/upgrade pipeline workflow to run `dotnet build` + `dotnet test` on PR and `master`.
-2. Include diagnostics conformance tests in required checks.
-3. Document required status checks in repository standards docs.
+Enforce branch protection policies in Azure DevOps:
+1. Add branch policy on `master` requiring `dataimportexportmanager-ci.yml` success.
+2. Block direct pushes as needed for policy-compliant PR flow.
+3. Verify policy behavior with a test PR.
 
 ## References
 - `docs/standards/repository-modernization-checklist.md`
