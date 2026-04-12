@@ -4,7 +4,7 @@
 - Name: `DataImportExportManager`
 - Last updated: `2026-04-12`
 - Branch: `master`
-- Latest commit: `0e6b8ce`
+- Latest commit: `40be3a2`
 - Working tree at checkpoint: clean
 
 ## Summary
@@ -32,6 +32,16 @@ Latest validation state:
 ## Metadata Maintenance Notes
 - Keep `Last updated` in strict `YYYY-MM-DD` format.
 - Keep `Latest commit` synchronized to current checkpoint commit; CI allows current `HEAD` or immediate parent commit during in-flight updates.
+
+## CI Guard Inventory (Current)
+- `validate modernization status metadata` -> `scripts/ci/Validate-ModernizationStatusMetadata.ps1`
+- `validate markdown links` -> `scripts/ci/Validate-MarkdownLinks.ps1`
+- `validate docs and pipeline contracts` -> `scripts/ci/Validate-DocsAndPipelineContracts.ps1`
+
+## Maintenance Cadence
+- Per approved bundle: run guard scripts, `dotnet build`, and `dotnet test` before commit/push.
+- Weekly: verify branch policy configuration still matches `docs/standards/azure-devops-branch-policy-checklist.md`.
+- Monthly: refresh this matrix checkpoint metadata (`Last updated`, `Latest commit`, validation counters) and re-run staleness audit scan.
 
 ## Status Matrix
 | Area | Status | Evidence | Next focus |
