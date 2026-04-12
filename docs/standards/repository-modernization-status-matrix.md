@@ -33,7 +33,7 @@ Latest validation state:
 | Testing and quality | Complete | Broad xUnit coverage including contract, integration-style DI tests, diagnostics conformance tests, and docs-sync guards; latest run `176/176`. | Maintain coverage parity for each new public API/diagnostic code. |
 | Observability and diagnostics | Complete | Structured diagnostics prefix (`[DIXMGR:...]`), centralized catalog (`ContractDiagnostics`), operation/code documentation, and conformance enforcement tests. | Keep catalog/tables/tests synchronized when adding codes. |
 | Performance and resilience | Complete (current scope) | Async import/export paths, size guards, deterministic parsing/export behavior, and existing performance-conscious implementation patterns retained. | Add targeted benchmarks only if regression signal appears. |
-| CI/CD and delivery | Partial | Azure DevOps staged workflow at `.azure-pipelines/workflows/dataimportexportmanager-ci.yml` validates `feature/*`/`dev` flow and PRs, and runs delivery packaging on `master` merge. | Apply/verify Azure DevOps branch policies for PR targets, approvals, and direct-push restrictions. |
+| CI/CD and delivery | Partial | Azure DevOps staged workflow at `.azure-pipelines/workflows/dataimportexportmanager-ci.yml` validates `feature/*`/`dev` flow and PRs, and runs delivery packaging on `master` merge with branch/build-scoped package artifacts. | Apply/verify Azure DevOps branch policies for PR targets, approvals, and direct-push restrictions using the checklist. |
 
 ## Required CI Status Checks (Azure DevOps)
 - Require successful run of `dataimportexportmanager-ci.yml` validation stage for pull requests targeting `dev` and `master`.
@@ -64,8 +64,10 @@ Apply and verify Azure DevOps branch policies:
 2. Restrict contributor push/merge rights on `dev` and `master`.
 3. Require owner approval for `dev` -> `master` pull requests.
 4. Validate enforcement with a contributor test PR to `dev`, a promotion PR from `dev` to `master`, and post-merge delivery run on `master`.
+5. Use `docs/standards/azure-devops-branch-policy-checklist.md` as the implementation and verification baseline.
 
 ## References
 - `docs/standards/repository-modernization-checklist.md`
 - `docs/standards/existing-repositories-rollout-execution-plan.md`
 - `docs/standards/targeted-repositories-modernization-backlog.md`
+- `docs/standards/azure-devops-branch-policy-checklist.md`

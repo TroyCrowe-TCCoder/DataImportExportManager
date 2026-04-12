@@ -16,7 +16,9 @@ pool:
 
 variables:
   BuildConfiguration: 'Release'
-  PackageOutput: '$(Build.ArtifactStagingDirectory)/packages'
+  PackageOutputRoot: '$(Build.ArtifactStagingDirectory)/packages'
+  PackageOutput: '$(PackageOutputRoot)/$(Build.SourceBranchName)/$(Build.BuildId)'
+  PackageArtifactName: 'nuget-packages-$(Build.BuildId)'
 
 stages:
   - stage: Validate
@@ -73,5 +75,5 @@ stages:
             displayName: 'Publish package artifacts'
             inputs:
               targetPath: '$(PackageOutput)'
-              artifact: 'nuget-packages'
+              artifact: '$(PackageArtifactName)'
               publishLocation: 'pipeline'
