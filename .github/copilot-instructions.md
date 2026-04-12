@@ -28,6 +28,13 @@ This repository instruction file should contain only project-specific context, d
 - Meaningful integration relationships or exceptions: Consumers own orchestration, persistence, transport, and security boundaries; this repo focuses on deterministic format translation and data fidelity.
 - All importer/exporter selection must be deterministic; the UI provides the format, and this utility should resolve and execute the appropriate importer/exporter based on explicit format input.
 
+## Repository Branching and Check-In Governance
+- Branch flow is enforced as: `feature/*` -> `dev` -> `master`.
+- Contributors other than repository owner must open pull requests from their branch into `dev` only.
+- Direct pushes to `dev` and `master` are disallowed for non-owner users.
+- Merge from `dev` to `master` requires repository owner approval.
+- `master` merge completion is expected to run pipeline build/test and deployment workflow.
+
 ## Repository-Specific Performance Additions
 - Add only deviations from the global performance baseline.
 - Example: cache only tenant-scoped configuration by `clientId`.

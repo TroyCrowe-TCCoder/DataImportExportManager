@@ -1,11 +1,13 @@
 trigger:
   branches:
     include:
+      - dev
       - master
 
 pr:
   branches:
     include:
+      - dev
       - master
 
 pool:

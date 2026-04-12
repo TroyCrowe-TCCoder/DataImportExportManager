@@ -33,12 +33,18 @@ Latest validation state:
 | Testing and quality | Complete | Broad xUnit coverage including contract, integration-style DI tests, diagnostics conformance tests, and docs-sync guards; latest run `176/176`. | Maintain coverage parity for each new public API/diagnostic code. |
 | Observability and diagnostics | Complete | Structured diagnostics prefix (`[DIXMGR:...]`), centralized catalog (`ContractDiagnostics`), operation/code documentation, and conformance enforcement tests. | Keep catalog/tables/tests synchronized when adding codes. |
 | Performance and resilience | Complete (current scope) | Async import/export paths, size guards, deterministic parsing/export behavior, and existing performance-conscious implementation patterns retained. | Add targeted benchmarks only if regression signal appears. |
-| CI/CD and delivery | Partial | Azure DevOps CI workflow added at `.azure-pipelines/workflows/dataimportexportmanager-ci.yml` with PR/`master` restore, build, and test execution. | Configure branch policies to require CI status checks before merge. |
+| CI/CD and delivery | Partial | Azure DevOps CI workflow at `.azure-pipelines/workflows/dataimportexportmanager-ci.yml` now validates `dev` and `master` with restore/build/test on CI and PR runs. | Apply/verify Azure DevOps branch policies for PR targets, approvals, and direct-push restrictions. |
 
 ## Required CI Status Checks (Azure DevOps)
-- Require successful run of `dataimportexportmanager-ci.yml` for pull requests targeting `master`.
+- Require successful run of `dataimportexportmanager-ci.yml` for pull requests targeting `dev` and `master`.
 - Require successful completion of all workflow steps: `dotnet restore`, `dotnet build`, and `dotnet test`.
 - Keep diagnostics conformance coverage enforced through the existing test suite included in `dotnet test`.
+
+## Required Branch Governance (Azure DevOps)
+- Enforce contributor workflow: `feature/*` pull requests into `dev` only.
+- Enforce promotion workflow: `dev` pull requests into `master` only.
+- Disallow direct pushes to `dev` and `master` for non-owner users.
+- Require repository owner approval before completing `dev` -> `master` pull requests.
 
 ## Session Handoff / Resume Notes
 To continue from this exact checkpoint:
@@ -52,10 +58,11 @@ Useful verification commands:
 - `git status --short`
 
 ## Next Planned Bundle Candidate
-Enforce branch protection policies in Azure DevOps:
-1. Add branch policy on `master` requiring `dataimportexportmanager-ci.yml` success.
-2. Block direct pushes as needed for policy-compliant PR flow.
-3. Verify policy behavior with a test PR.
+Apply and verify Azure DevOps branch policies:
+1. Require build validation on `dev` and `master` using `dataimportexportmanager-ci.yml`.
+2. Restrict contributor push/merge rights on `dev` and `master`.
+3. Require owner approval for `dev` -> `master` pull requests.
+4. Validate enforcement with a contributor test PR to `dev` and a promotion PR from `dev` to `master`.
 
 ## References
 - `docs/standards/repository-modernization-checklist.md`
