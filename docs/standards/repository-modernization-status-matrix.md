@@ -33,12 +33,13 @@ Latest validation state:
 | Testing and quality | Complete | Broad xUnit coverage including contract, integration-style DI tests, diagnostics conformance tests, and docs-sync guards; latest run `176/176`. | Maintain coverage parity for each new public API/diagnostic code. |
 | Observability and diagnostics | Complete | Structured diagnostics prefix (`[DIXMGR:...]`), centralized catalog (`ContractDiagnostics`), operation/code documentation, and conformance enforcement tests. | Keep catalog/tables/tests synchronized when adding codes. |
 | Performance and resilience | Complete (current scope) | Async import/export paths, size guards, deterministic parsing/export behavior, and existing performance-conscious implementation patterns retained. | Add targeted benchmarks only if regression signal appears. |
-| CI/CD and delivery | Partial | Azure DevOps CI workflow at `.azure-pipelines/workflows/dataimportexportmanager-ci.yml` now validates `dev` and `master` with restore/build/test on CI and PR runs. | Apply/verify Azure DevOps branch policies for PR targets, approvals, and direct-push restrictions. |
+| CI/CD and delivery | Partial | Azure DevOps staged workflow at `.azure-pipelines/workflows/dataimportexportmanager-ci.yml` validates `feature/*`/`dev` flow and PRs, and runs delivery packaging on `master` merge. | Apply/verify Azure DevOps branch policies for PR targets, approvals, and direct-push restrictions. |
 
 ## Required CI Status Checks (Azure DevOps)
-- Require successful run of `dataimportexportmanager-ci.yml` for pull requests targeting `dev` and `master`.
-- Require successful completion of all workflow steps: `dotnet restore`, `dotnet build`, and `dotnet test`.
+- Require successful run of `dataimportexportmanager-ci.yml` validation stage for pull requests targeting `dev` and `master`.
+- Require successful completion of validation steps: `dotnet restore`, `dotnet build`, and `dotnet test`.
 - Keep diagnostics conformance coverage enforced through the existing test suite included in `dotnet test`.
+- Keep `master` merge configured for delivery packaging/publish execution after merge completion.
 
 ## Required Branch Governance (Azure DevOps)
 - Enforce contributor workflow: `feature/*` pull requests into `dev` only.
@@ -59,10 +60,10 @@ Useful verification commands:
 
 ## Next Planned Bundle Candidate
 Apply and verify Azure DevOps branch policies:
-1. Require build validation on `dev` and `master` using `dataimportexportmanager-ci.yml`.
+1. Require build validation on pull requests targeting `dev` and `master` using `dataimportexportmanager-ci.yml`.
 2. Restrict contributor push/merge rights on `dev` and `master`.
 3. Require owner approval for `dev` -> `master` pull requests.
-4. Validate enforcement with a contributor test PR to `dev` and a promotion PR from `dev` to `master`.
+4. Validate enforcement with a contributor test PR to `dev`, a promotion PR from `dev` to `master`, and post-merge delivery run on `master`.
 
 ## References
 - `docs/standards/repository-modernization-checklist.md`

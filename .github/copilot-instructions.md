@@ -33,7 +33,11 @@ This repository instruction file should contain only project-specific context, d
 - Contributors other than repository owner must open pull requests from their branch into `dev` only.
 - Direct pushes to `dev` and `master` are disallowed for non-owner users.
 - Merge from `dev` to `master` requires repository owner approval.
-- `master` merge completion is expected to run pipeline build/test and deployment workflow.
+- `master` merge completion is expected to run the delivery workflow.
+
+## Continuous Integration Preferences
+- Run build/tests on `feature/*` pushes, `dev` pushes, and PRs targeting `dev` or `master`.
+- Do not run test execution on `master` merge CI; run delivery packaging/publish on `master` merge.
 
 ## Repository-Specific Performance Additions
 - Add only deviations from the global performance baseline.
