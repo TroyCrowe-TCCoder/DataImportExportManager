@@ -4,7 +4,7 @@
 - Name: `DataImportExportManager`
 - Last updated: `2026-04-12`
 - Branch: `master`
-- Latest commit: `be6c217`
+- Latest commit: `0e6b8ce`
 - Working tree at checkpoint: clean
 
 ## Summary
@@ -28,6 +28,10 @@ Latest validation state:
 - Result: no stale-code markers found (`TODO`/`FIXME`/`[Obsolete]` scans returned no actionable findings).
 - Result: no missing local markdown links detected across repository markdown files.
 - Result: governance and CI flow wording is synchronized across `README.md`, `.github/copilot-instructions.md`, and standards docs.
+
+## Metadata Maintenance Notes
+- Keep `Last updated` in strict `YYYY-MM-DD` format.
+- Keep `Latest commit` synchronized to current checkpoint commit; CI allows current `HEAD` or immediate parent commit during in-flight updates.
 
 ## Status Matrix
 | Area | Status | Evidence | Next focus |

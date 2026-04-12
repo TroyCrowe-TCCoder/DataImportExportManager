@@ -13,6 +13,11 @@ if (-not (Test-Path $statusPath)) {
 else {
     $content = Get-Content -Path $statusPath -Raw
 
+    $lastUpdatedMatch = [regex]::Match($content, '- Last updated: `(?<date>\d{4}-\d{2}-\d{2})`')
+    if (-not $lastUpdatedMatch.Success) {
+        $failures.Add("Missing or invalid 'Last updated' metadata format. Expected YYYY-MM-DD.")
+    }
+
     if ($content.IndexOf('## Staleness Audit Checkpoint', [StringComparison]::Ordinal) -lt 0) {
         $failures.Add("Missing required section: '## Staleness Audit Checkpoint'.")
     }
