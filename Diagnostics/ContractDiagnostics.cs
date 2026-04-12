@@ -68,6 +68,16 @@ internal static class ContractDiagnostics
         ArgumentException.ThrowIfNullOrWhiteSpace(code);
         ArgumentException.ThrowIfNullOrWhiteSpace(detail);
 
+        if (!IsKnownOperation(operation))
+        {
+            throw new ArgumentException($"Unknown diagnostics operation '{operation}'.", nameof(operation));
+        }
+
+        if (!IsKnownCode(code))
+        {
+            throw new ArgumentException($"Unknown diagnostics code '{code}'.", nameof(code));
+        }
+
         return $"{Prefix}{extension}:{operation}:{code}] {detail}";
     }
 

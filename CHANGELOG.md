@@ -38,6 +38,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Diagnostics catalog hardening:
   - Added operation-scoped message builders (`BuildImportMessage`, `BuildExportMessage`, `BuildConfigMessage`).
   - Added catalog helper checks for known operations/codes and input validation guards in diagnostics message construction.
+  - Diagnostics message construction now rejects unknown operation/code values to enforce strict catalog integrity.
 - New test suites and integration coverage:
   - `TsvImporterTests`, `TsvExporterTests`
   - `XmlImporterTests`, `XmlExporterTests`
