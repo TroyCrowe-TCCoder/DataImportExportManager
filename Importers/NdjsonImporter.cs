@@ -87,8 +87,10 @@ public sealed partial class NdjsonImporter : IDataImporter
             }
             catch (JsonException ex)
             {
+                var detail = $"NDJSON line {lineNumber} is malformed JSON at byte position {ex.BytePositionInLine}.";
+
                 throw new InvalidOperationException(
-                    ContractDiagnostics.BuildMessage(SupportedExtensionValue, ContractDiagnostics.Operations.Import, ContractDiagnostics.Codes.MalformedJson, $"NDJSON line {lineNumber} is malformed JSON."),
+                    ContractDiagnostics.BuildMessage(SupportedExtensionValue, ContractDiagnostics.Operations.Import, ContractDiagnostics.Codes.MalformedJson, detail),
                     ex);
             }
 
