@@ -56,8 +56,12 @@ public sealed partial class XmlImporter : IDataImporter
         }
         catch (XmlException ex)
         {
+            var detail = ex.LineNumber > 0 && ex.LinePosition > 0
+                ? $"XML payload is malformed at line {ex.LineNumber}, position {ex.LinePosition}."
+                : "XML payload is malformed.";
+
             throw new InvalidOperationException(
-                ContractDiagnostics.BuildMessage(SupportedExtensionValue, ContractDiagnostics.Operations.Import, ContractDiagnostics.Codes.MalformedXml, "XML payload is malformed."),
+                ContractDiagnostics.BuildMessage(SupportedExtensionValue, ContractDiagnostics.Operations.Import, ContractDiagnostics.Codes.MalformedXml, detail),
                 ex);
         }
 

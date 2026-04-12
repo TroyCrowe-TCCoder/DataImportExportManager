@@ -55,8 +55,12 @@ public sealed partial class JsonImporter : IDataImporter
         }
         catch (JsonException ex)
         {
+            var detail = ex.LineNumber is not null && ex.BytePositionInLine is not null
+                ? $"JSON payload is malformed at line {ex.LineNumber.Value}, byte position {ex.BytePositionInLine.Value}."
+                : "JSON payload is malformed.";
+
             throw new InvalidOperationException(
-                ContractDiagnostics.BuildMessage(SupportedExtensionValue, ContractDiagnostics.Operations.Import, ContractDiagnostics.Codes.MalformedJson, "JSON payload is malformed."),
+                ContractDiagnostics.BuildMessage(SupportedExtensionValue, ContractDiagnostics.Operations.Import, ContractDiagnostics.Codes.MalformedJson, detail),
                 ex);
         }
 
