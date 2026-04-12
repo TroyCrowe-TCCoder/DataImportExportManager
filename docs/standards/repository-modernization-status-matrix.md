@@ -40,6 +40,7 @@ Latest validation state:
 - Require successful completion of validation steps: `dotnet restore`, `dotnet build`, and `dotnet test`.
 - Keep diagnostics conformance coverage enforced through the existing test suite included in `dotnet test`.
 - Keep `master` merge configured for delivery packaging/publish execution after merge completion.
+- See `README.md` section `Delivery Artifacts (Master Merge)` for operator-facing delivery artifact naming/output details.
 
 ## Required Branch Governance (Azure DevOps)
 - Enforce contributor workflow: local branch pushed to remote branch, then pull request into `dev` only.

@@ -92,6 +92,14 @@ Repository governance follows:
 For required Azure DevOps branch-policy settings and operator steps, see:
 `docs/standards/azure-devops-branch-policy-checklist.md`.
 
+### Delivery Artifacts (Master Merge)
+
+On `master` merge, the delivery stage packs `DataImportExportManager.csproj` and publishes NuGet package artifacts to the pipeline artifact store.
+
+Artifact naming is deterministic and build-scoped:
+- Artifact name: `nuget-packages-<BuildId>`
+- Package output path: `$(Build.ArtifactStagingDirectory)/packages/<SourceBranchName>/<BuildId>`
+
 ## Usage
 
 ### Dependency Injection (Recommended)
