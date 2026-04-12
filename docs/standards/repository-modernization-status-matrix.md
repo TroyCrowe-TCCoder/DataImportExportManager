@@ -4,7 +4,7 @@
 - Name: `DataImportExportManager`
 - Last updated: `2026-04-12`
 - Branch: `master`
-- Latest commit: `d1bfd67`
+- Latest commit: `b19877d`
 - Working tree at checkpoint: clean
 
 ## Summary
@@ -22,6 +22,12 @@ Implemented and verified in this repo:
 Latest validation state:
 - Tests: `186/186` passing
 - Build: successful
+
+## Staleness Audit Checkpoint
+- Scope executed: stale-code signals, markdown link integrity, and cross-document flow/governance drift.
+- Result: no stale-code markers found (`TODO`/`FIXME`/`[Obsolete]` scans returned no actionable findings).
+- Result: no missing local markdown links detected across repository markdown files.
+- Result: governance and CI flow wording is synchronized across `README.md`, `.github/copilot-instructions.md`, and standards docs.
 
 ## Status Matrix
 | Area | Status | Evidence | Next focus |
