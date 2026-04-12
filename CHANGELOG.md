@@ -35,6 +35,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Diagnostics metadata consolidation:
   - Added centralized internal diagnostics catalog constants for operations and codes.
   - Refactored handlers and router to use the catalog to reduce code drift risk.
+- Diagnostics catalog hardening:
+  - Added operation-scoped message builders (`BuildImportMessage`, `BuildExportMessage`, `BuildConfigMessage`).
+  - Added catalog helper checks for known operations/codes and input validation guards in diagnostics message construction.
 - New test suites and integration coverage:
   - `TsvImporterTests`, `TsvExporterTests`
   - `XmlImporterTests`, `XmlExporterTests`

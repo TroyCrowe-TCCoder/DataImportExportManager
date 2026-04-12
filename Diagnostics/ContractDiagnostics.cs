@@ -49,10 +49,61 @@ internal static class ContractDiagnostics
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static string BuildImportMessage(string extension, string code, string detail)
+        => BuildMessage(extension, Operations.Import, code, detail);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static string BuildExportMessage(string extension, string code, string detail)
+        => BuildMessage(extension, Operations.Export, code, detail);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static string BuildConfigMessage(string extension, string code, string detail)
+        => BuildMessage(extension, Operations.Config, code, detail);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static string BuildMessage(string extension, string operation, string code, string detail)
-        => $"{Prefix}{extension}:{operation}:{code}] {detail}";
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(extension);
+        ArgumentException.ThrowIfNullOrWhiteSpace(operation);
+        ArgumentException.ThrowIfNullOrWhiteSpace(code);
+        ArgumentException.ThrowIfNullOrWhiteSpace(detail);
+
+        return $"{Prefix}{extension}:{operation}:{code}] {detail}";
+    }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static bool HasPrefix(string message)
         => message.StartsWith(Prefix, StringComparison.Ordinal);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsKnownOperation(string operation)
+        => operation is Operations.Import or Operations.Export or Operations.Config;
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsKnownCode(string code)
+        => code is
+            Codes.RouteNotFound
+            or Codes.Contract
+            or Codes.DuplicateHandler
+            or Codes.InvalidDelimiter
+            or Codes.InvalidRootKind
+            or Codes.InvalidRecordKind
+            or Codes.MalformedJson
+            or Codes.MixedRecordTypes
+            or Codes.BlankLine
+            or Codes.InvalidRoot
+            or Codes.MalformedXml
+            or Codes.InvalidRowElement
+            or Codes.SchemaModeViolation
+            or Codes.ObjectRowsDisabled
+            or Codes.MixedRowSchemas
+            or Codes.InvalidHeader
+            or Codes.DuplicateHeader
+            or Codes.RowWidthMismatch
+            or Codes.InvalidWorkbook
+            or Codes.SheetNotFound
+            or Codes.BufferLimitExceeded
+            or Codes.InvalidSheetIndex
+            or Codes.InvalidSheetName
+            or Codes.RowLimitExceeded;
 }

@@ -32,7 +32,7 @@ public sealed class DataFormatRouter : IDataFormatRouter
         return _importers.TryGetValue(normalized, out var importer)
             ? importer
             : throw new InvalidOperationException(
-                ContractDiagnostics.BuildMessage(normalized, ContractDiagnostics.Operations.Import, ContractDiagnostics.Codes.RouteNotFound, $"No importer is registered for extension '{normalized}'."));
+                ContractDiagnostics.BuildImportMessage(normalized, ContractDiagnostics.Codes.RouteNotFound, $"No importer is registered for extension '{normalized}'."));
     }
 
     /// <inheritdoc />
@@ -42,7 +42,7 @@ public sealed class DataFormatRouter : IDataFormatRouter
         return _exporters.TryGetValue(normalized, out var exporter)
             ? exporter
             : throw new InvalidOperationException(
-                ContractDiagnostics.BuildMessage(normalized, ContractDiagnostics.Operations.Export, ContractDiagnostics.Codes.RouteNotFound, $"No exporter is registered for extension '{normalized}'."));
+                ContractDiagnostics.BuildExportMessage(normalized, ContractDiagnostics.Codes.RouteNotFound, $"No exporter is registered for extension '{normalized}'."));
     }
 
     /// <inheritdoc />
@@ -88,7 +88,7 @@ public sealed class DataFormatRouter : IDataFormatRouter
         catch (InvalidOperationException ex) when (!HasDiagnosticPrefix(ex.Message))
         {
             throw new InvalidOperationException(
-                ContractDiagnostics.BuildMessage(normalizedExtension, ContractDiagnostics.Operations.Import, ContractDiagnostics.Codes.Contract, ex.Message),
+                ContractDiagnostics.BuildImportMessage(normalizedExtension, ContractDiagnostics.Codes.Contract, ex.Message),
                 ex);
         }
     }
@@ -107,7 +107,7 @@ public sealed class DataFormatRouter : IDataFormatRouter
         catch (InvalidOperationException ex) when (!HasDiagnosticPrefix(ex.Message))
         {
             throw new InvalidOperationException(
-                ContractDiagnostics.BuildMessage(normalizedExtension, ContractDiagnostics.Operations.Export, ContractDiagnostics.Codes.Contract, ex.Message),
+                ContractDiagnostics.BuildExportMessage(normalizedExtension, ContractDiagnostics.Codes.Contract, ex.Message),
                 ex);
         }
     }
@@ -124,7 +124,7 @@ public sealed class DataFormatRouter : IDataFormatRouter
             if (!map.TryAdd(normalized, importer))
             {
                 throw new InvalidOperationException(
-                    ContractDiagnostics.BuildMessage(normalized, ContractDiagnostics.Operations.Import, ContractDiagnostics.Codes.DuplicateHandler, $"Multiple importers are registered for extension '{normalized}'."));
+                    ContractDiagnostics.BuildImportMessage(normalized, ContractDiagnostics.Codes.DuplicateHandler, $"Multiple importers are registered for extension '{normalized}'."));
             }
         }
 
@@ -143,7 +143,7 @@ public sealed class DataFormatRouter : IDataFormatRouter
             if (!map.TryAdd(normalized, exporter))
             {
                 throw new InvalidOperationException(
-                    ContractDiagnostics.BuildMessage(normalized, ContractDiagnostics.Operations.Export, ContractDiagnostics.Codes.DuplicateHandler, $"Multiple exporters are registered for extension '{normalized}'."));
+                    ContractDiagnostics.BuildExportMessage(normalized, ContractDiagnostics.Codes.DuplicateHandler, $"Multiple exporters are registered for extension '{normalized}'."));
             }
         }
 

@@ -289,6 +289,7 @@ Recent diagnostics parity additions include internal machine-readable codes for:
 
 Diagnostics conformance is validated by a centralized test matrix (`DiagnosticsConformanceTests`) that asserts stable diagnostic message shape across direct handlers and router paths.
 Diagnostics metadata is centralized in an internal catalog (`ContractDiagnostics`) to keep operation/code values consistent across handlers, router wrapping, and tests.
+`ContractDiagnostics` also provides operation-scoped builder helpers (`BuildImportMessage`, `BuildExportMessage`, `BuildConfigMessage`) to reduce call-site drift.
 
 ## Architecture
 
