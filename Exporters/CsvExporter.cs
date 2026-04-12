@@ -4,6 +4,7 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
+using DataImportExportManager.Diagnostics;
 using DataImportExportManager.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -41,7 +42,7 @@ public sealed partial class CsvExporter : IDataExporter
         _csvSpecialChars = SearchValues.Create([_delimiter, '"', '\n', '\r']);
         if (resolved.Delimiter is '"' or '\r' or '\n')
             throw new ArgumentException(
-                "The delimiter cannot be a double-quote, carriage-return, or line-feed character.",
+                ContractDiagnostics.BuildMessage(SupportedExtensionValue, ContractDiagnostics.Operations.Config, ContractDiagnostics.Codes.InvalidDelimiter, "The delimiter cannot be a double-quote, carriage-return, or line-feed character."),
                 nameof(options));
     }
 
@@ -120,5 +121,7 @@ public sealed partial class CsvExporter : IDataExporter
 
     [LoggerMessage(Level = LogLevel.Debug, Message = "CSV export completed with {RowCount} rows in {ElapsedMs}ms")]
     private partial void LogExportCompleted(int rowCount, double elapsedMs);
+
+    private const string SupportedExtensionValue = ".csv";
 }
 

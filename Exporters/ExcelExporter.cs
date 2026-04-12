@@ -2,6 +2,7 @@ namespace DataImportExportManager.Exporters;
 
 using System.Diagnostics;
 using System.Globalization;
+using DataImportExportManager.Diagnostics;
 using DataImportExportManager.Interfaces;
 using DocumentFormat.OpenXml;
 using DocumentFormat.OpenXml.Packaging;
@@ -45,13 +46,18 @@ public sealed partial class ExcelExporter : IDataExporter
     {
         ArgumentNullException.ThrowIfNull(data);
         ArgumentNullException.ThrowIfNull(destination);
-        ArgumentException.ThrowIfNullOrWhiteSpace(_options.SheetName);
+
+        if (string.IsNullOrWhiteSpace(_options.SheetName))
+        {
+            throw new ArgumentException(
+                ContractDiagnostics.BuildMessage(SupportedExtensionValue, ContractDiagnostics.Operations.Config, ContractDiagnostics.Codes.InvalidSheetName, "Excel export requires a non-empty worksheet name."));
+        }
 
         const int ExcelMaxRows = 1_048_576;
         if (data.Count > ExcelMaxRows)
             throw new ArgumentOutOfRangeException(
                 nameof(data),
-                $"Data contains {data.Count} rows. Excel supports a maximum of {ExcelMaxRows} rows.");
+                ContractDiagnostics.BuildMessage(SupportedExtensionValue, ContractDiagnostics.Operations.Export, ContractDiagnostics.Codes.RowLimitExceeded, $"Data contains {data.Count} rows. Excel supports a maximum of {ExcelMaxRows} rows."));
         LogExportStarted(data.Count);
         var startTimestamp = Stopwatch.GetTimestamp();
 
@@ -126,4 +132,6 @@ public sealed partial class ExcelExporter : IDataExporter
         while (col >= 0);
         return string.Concat(letters[pos..], rowIndex.ToString(CultureInfo.InvariantCulture));
     }
+
+    private const string SupportedExtensionValue = ".xlsx";
 }

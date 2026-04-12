@@ -31,4 +31,22 @@ public sealed class ExcelImporterOptions
     /// <see cref="SheetName"/> takes precedence when both are set.
     /// </summary>
     public int? SheetIndex { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether hidden/control characters should be normalized.
+    /// When enabled, zero-width format characters and non-tab/newline control characters are removed,
+    /// and non-breaking spaces are converted to regular spaces.
+    /// </summary>
+    /// <remarks>Defaults to <see langword="false"/> to preserve raw imported values.</remarks>
+    public bool NormalizeHiddenCharacters { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether date-formatted numeric cells should be interpreted
+    /// as ISO 8601 date/time strings.
+    /// </summary>
+    /// <remarks>
+    /// When <see langword="false"/>, numeric values are returned exactly as stored.
+    /// Defaults to <see langword="false"/>.
+    /// </remarks>
+    public bool ParseDateFormattedCells { get; set; }
 }

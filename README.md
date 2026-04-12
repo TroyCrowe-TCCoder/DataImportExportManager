@@ -1,11 +1,19 @@
 # DataImportExportManager
 
-A .NET 10 library for importing and exporting tabular data between CSV and Excel (.xlsx) formats using a clean, extensible architecture.
+A .NET 10 library for deterministic tabular data import/export across CSV, Excel (.xlsx), JSON, and NDJSON (.ndjson/.jsonl) formats.
 
 ## Features
 
-- **CSV import/export** — RFC 4180–compliant parsing and writing with full support for multi-line quoted fields, configurable delimiter, and configurable encoding.
+- **CSV/TSV import/export** — RFC 4180–compliant parsing and writing with full support for multi-line quoted fields, configurable delimiter, and configurable encoding.
 - **Excel import/export** — Reads and writes `.xlsx` files via the [DocumentFormat.OpenXml](https://www.nuget.org/packages/DocumentFormat.OpenXml) SDK with configurable sheet selection.
+- **JSON import/export** — Supports `.json` payloads using `System.Text.Json` with deterministic tabular mapping.
+- **NDJSON import/export** — Supports line-delimited JSON records (`.ndjson` and `.jsonl` alias) for pipeline-friendly ingestion/export.
+- **XML import/export** — Supports deterministic tabular XML using `<rows><row><cell>...</cell></row></rows>` schema, with optional object-element row mode.
+- **Deterministic format routing** — `IDataFormatRouter` resolves importers/exporters from explicit format input (for example, UI-selected extension).
+
+### JSON Serializer Baseline
+
+This library uses `System.Text.Json` (Microsoft .NET JSON APIs) and does not depend on `Newtonsoft.Json`.
 - **Extensible** — Add new formats by implementing `IDataImporter` or `IDataExporter` and registering them with the DI container.
 - **Structured logging** — Zero-allocation `[LoggerMessage]` source-generated logging with `ILogger<T>`. All loggers are optional — the library falls back to `NullLogger<T>` automatically.
 - **Configurable options** — Per-component options classes let consumers tune encoding, delimiter, buffer limits, sheet selection, and sanitization behaviour.
@@ -18,23 +26,44 @@ A .NET 10 library for importing and exporting tabular data between CSV and Excel
 DataImportExportManager/
 ├── Interfaces/                  # Public contracts
 │   ├── IDataImporter.cs         # Stream → tabular data
-│   └── IDataExporter.cs         # Tabular data → stream
+│   ├── IDataExporter.cs         # Tabular data → stream
+│   └── IDataFormatRouter.cs     # Deterministic format selection
 ├── Importers/                   # IDataImporter implementations
 │   ├── CsvImporter.cs
 │   ├── CsvImporterOptions.cs
+│   ├── TsvImporter.cs
 │   ├── ExcelImporter.cs
-│   └── ExcelImporterOptions.cs
+│   ├── ExcelImporterOptions.cs
+│   ├── JsonImporter.cs
+│   ├── NdjsonImporter.cs
+│   ├── XmlImporter.cs
+│   ├── XmlImporterOptions.cs
+│   └── JsonImporterOptions.cs
 ├── Exporters/                   # IDataExporter implementations
 │   ├── CsvExporter.cs
 │   ├── CsvExporterOptions.cs
-│   └── ExcelExporter.cs
+│   ├── TsvExporter.cs
+│   ├── ExcelExporter.cs
+│   ├── JsonExporter.cs
+│   ├── JsonExporterOptions.cs
+│   ├── NdjsonExporter.cs
+│   ├── NdjsonExporterOptions.cs
+│   ├── XmlExporter.cs
+│   └── XmlExporterOptions.cs
+├── Services/                    # Routing/orchestration
+│   └── DataFormatRouter.cs
 └── Extensions/                  # DI registration
     └── ServiceCollectionExtensions.cs
 
 DataImportExportManager.Tests/   # xUnit test project
 ├── CsvImporterTests.cs
 ├── CsvExporterTests.cs
-└── ExcelImporterTests.cs
+├── ExcelImporterTests.cs
+├── JsonImporterTests.cs
+├── JsonExporterTests.cs
+├── NdjsonImporterTests.cs
+├── NdjsonExporterTests.cs
+└── DataFormatRouterTests.cs
 ```
 
 ## Getting Started
@@ -83,21 +112,30 @@ builder.Services.AddDataImportExportManager(
     configureCsvExporter: csv =>
     {
         csv.SanitizeFormulaCells = true;        // enable injection protection
+    },
+    configureXmlExporter: xml =>
+    {
+        xml.UseObjectElementRows = true;        // first row mapped as XML element names
+        xml.StrictObjectElementRowWidth = true; // enforce header/data width contract
+    },
+    configureXmlImporter: xml =>
+    {
+        xml.RowSchemaMode = XmlImportRowSchemaMode.ObjectElementsOnly; // strict object-row profile
     });
 ```
 
-Resolve and use importers/exporters directly — composing them is the consumer's responsibility:
+Resolve and route by explicit extension (recommended for UI-selected formats):
 
 ```csharp
-// Inject IEnumerable<IDataImporter> and IEnumerable<IDataExporter>
-var csvImporter  = importers.First(i => i.SupportedExtension == ".csv");
-var xlsxExporter = exporters.First(e => e.SupportedExtension == ".xlsx");
+// Inject IDataFormatRouter
+var importer = router.GetImporter(".csv");
+var exporter = router.GetExporter("xlsx");
 
 await using var source      = File.OpenRead("data.csv");
 await using var destination = File.Create("data.xlsx");
 
-var rows = await csvImporter.ImportAsync(source);
-await xlsxExporter.ExportAsync(rows, destination);
+var rows = await importer.ImportAsync(source);
+await exporter.ExportAsync(rows, destination);
 ```
 
 ### Manual Construction (No DI)
@@ -148,6 +186,45 @@ IReadOnlyList<IReadOnlyList<string>> rows = await new CsvImporter().ImportAsync(
 | `SheetName` | `null` | Import a worksheet by name (case-insensitive); takes precedence over `SheetIndex` |
 | `SheetIndex` | `null` | Import a worksheet by zero-based index |
 
+### `JsonImporterOptions`
+
+| Property | Default | Description |
+|----------|---------|-------------|
+| `IncludeHeaderRowForObjectRecords` | `true` | For object-record JSON arrays, includes a synthesized deterministic header row |
+
+### `JsonExporterOptions`
+
+| Property | Default | Description |
+|----------|---------|-------------|
+| `WriteIndented` | `false` | Writes indented JSON output when enabled |
+
+### `NdjsonImporterOptions`
+
+| Property | Default | Description |
+|----------|---------|-------------|
+| `IgnoreBlankLines` | `true` | Ignores blank/whitespace NDJSON lines; throws when disabled |
+
+### `NdjsonExporterOptions`
+
+| Property | Default | Description |
+|----------|---------|-------------|
+| `WriteTrailingNewline` | `true` | Writes a final trailing newline after last NDJSON record |
+
+### `XmlImporterOptions`
+
+| Property | Default | Description |
+|----------|---------|-------------|
+| `EnableObjectElementRows` | `true` | Enables importing rows like `<row><name>...</name></row>` |
+| `IncludeHeaderRowForObjectElementRows` | `true` | Includes synthesized header row when object-element rows are imported |
+| `RowSchemaMode` | `Auto` | `Auto`, `CellsOnly`, or `ObjectElementsOnly` strict schema contract |
+
+### `XmlExporterOptions`
+
+| Property | Default | Description |
+|----------|---------|-------------|
+| `UseObjectElementRows` | `false` | Exports using first row as header element names and subsequent row values as elements |
+| `StrictObjectElementRowWidth` | `false` | When object mode is enabled, enforces each data row width equals header count |
+
 ## Adding a New Format
 
 1. Create a class implementing `IDataImporter` and/or `IDataExporter` in the appropriate folder.
@@ -165,6 +242,53 @@ This is a **class library** intended to be referenced by consuming applications.
 - **No infrastructure opinions** — Does not include telemetry exporters, hosting, or configuration providers.
 - **ConfigureAwait(false)** — All `await` calls use `ConfigureAwait(false)` to prevent deadlocks in any consumer `SynchronizationContext`.
 - **Configurable resource limits** — `ExcelImporterOptions.MaxBufferSize` lets consumers tune memory limits for their hosting tier.
+
+## Contract Diagnostics
+
+When using `IDataFormatRouter`, contract and routing failures are surfaced with a deterministic diagnostic prefix:
+
+- Format: `[DIXMGR:<extension>:<operation>:<code>] <detail>`
+- Example: `[DIXMGR:.json:IMPORT:CONTRACT] JSON import requires a root array of arrays or objects.`
+
+This makes failure handling and telemetry correlation consistent across all supported formats.
+
+Recent diagnostics parity additions include internal machine-readable codes for:
+
+- CSV/TSV delimiter configuration validation (`INVALID_DELIMITER`)
+- Excel import validation (`INVALID_WORKBOOK`, `SHEET_NOT_FOUND`, `BUFFER_LIMIT_EXCEEDED`)
+- Excel export validation (`INVALID_SHEET_NAME`, `ROW_LIMIT_EXCEEDED`)
+
+### Diagnostics Code Reference (Current)
+
+| Code | Primary Surface | Meaning |
+|------|-----------------|---------|
+| `ROUTE_NOT_FOUND` | `IDataFormatRouter` | No importer/exporter is registered for the requested extension |
+| `CONTRACT` | `IDataFormatRouter` | Router wrapped a non-prefixed `InvalidOperationException` from a handler |
+| `DUPLICATE_HANDLER` | `IDataFormatRouter` | Multiple handlers were registered for the same normalized extension |
+| `INVALID_DELIMITER` | CSV/TSV config | Delimiter is reserved (`"`, `\r`, `\n`) |
+| `INVALID_ROOT_KIND` | JSON import | Root/record kind not allowed for expected payload shape |
+| `INVALID_RECORD_KIND` | JSON/NDJSON import | Record kind is not valid for the expected import shape |
+| `MALFORMED_JSON` | JSON/NDJSON import | JSON payload or NDJSON record line cannot be parsed |
+| `MIXED_RECORD_TYPES` | JSON/NDJSON import | Mixed array/object record kinds in one logical dataset |
+| `BLANK_LINE` | NDJSON import | Blank line encountered while strict blank-line handling is enabled |
+| `INVALID_ROOT` | XML import | Root element does not match required schema or XML is malformed |
+| `MALFORMED_XML` | XML import | XML payload cannot be parsed |
+| `INVALID_ROW_ELEMENT` | XML import | Non-`row` element encountered under `rows` root |
+| `SCHEMA_MODE_VIOLATION` | XML import | Row shape violates configured schema mode |
+| `OBJECT_ROWS_DISABLED` | XML import | Object-element row mode encountered while disabled |
+| `MIXED_ROW_SCHEMAS` | XML import | Mixed `cell` and object-element row schemas detected |
+| `INVALID_HEADER` | XML export | Header name empty/invalid for XML element export mode |
+| `DUPLICATE_HEADER` | XML export | Duplicate object-element header names detected |
+| `ROW_WIDTH_MISMATCH` | XML export | Strict row-width mode failed header/data column alignment |
+| `INVALID_WORKBOOK` | Excel import | Workbook part missing from Excel document |
+| `SHEET_NOT_FOUND` | Excel import | Requested worksheet could not be resolved |
+| `BUFFER_LIMIT_EXCEEDED` | Excel import | Non-seekable input exceeded configured buffering limit |
+| `INVALID_SHEET_INDEX` | Excel import | Negative sheet index provided |
+| `INVALID_SHEET_NAME` | Excel export config | Empty/whitespace sheet name provided |
+| `ROW_LIMIT_EXCEEDED` | Excel export | Data row count exceeded Excel workbook limit |
+
+Diagnostics conformance is validated by a centralized test matrix (`DiagnosticsConformanceTests`) that asserts stable diagnostic message shape across direct handlers and router paths.
+Diagnostics metadata is centralized in an internal catalog (`ContractDiagnostics`) to keep operation/code values consistent across handlers, router wrapping, and tests.
 
 ## Architecture
 

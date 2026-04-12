@@ -8,6 +8,38 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- `TsvImporter` and `TsvExporter` for deterministic `.tsv` support.
+- `JsonImporterOptions`, `JsonExporterOptions`, `NdjsonImporterOptions`, `NdjsonExporterOptions`, `XmlImporterOptions`, and `XmlExporterOptions` for configurable format behavior with deterministic defaults.
+- `.jsonl` alias support in `DataFormatRouter` (normalized to `.ndjson`).
+- `XmlImporter`/`XmlExporter` object-element row mode support:
+  - Import: `<rows><row><name>value</name></row></rows>` with deterministic header synthesis.
+  - Export: optional first-row-as-headers mapping to object elements.
+- XML strict contract profile enhancements:
+  - Importer `XmlImporterOptions.RowSchemaMode` (`Auto`, `CellsOnly`, `ObjectElementsOnly`) with row-index diagnostics.
+  - Exporter `XmlExporterOptions.StrictObjectElementRowWidth` enforcing header/data width alignment with row diagnostics.
+- Router diagnostics normalization:
+  - `IDataFormatRouter` now wraps contract failures with deterministic prefixes: `[DIXMGR:<extension>:<operation>:<code>]`.
+  - Route-not-found failures now use `ROUTE_NOT_FOUND` diagnostic code for stable handling.
+- Diagnostics parity completion for CSV/TSV and Excel:
+  - CSV/TSV delimiter validation now emits `INVALID_DELIMITER`.
+  - Excel importer emits `INVALID_WORKBOOK`, `SHEET_NOT_FOUND`, and `BUFFER_LIMIT_EXCEEDED`.
+  - Excel exporter emits `INVALID_SHEET_NAME` and `ROW_LIMIT_EXCEEDED`.
+- Diagnostics parity refinements:
+  - JSON and NDJSON malformed payload parsing now emits `MALFORMED_JSON`.
+  - XML malformed payload parsing now emits `MALFORMED_XML`.
+  - Excel importer negative sheet-index validation now emits `INVALID_SHEET_INDEX`.
+  - Added README diagnostics code reference table for consumer integration.
+- Diagnostics conformance hardening:
+  - Router duplicate importer/exporter registration now emits `DUPLICATE_HANDLER`.
+  - Added centralized diagnostics conformance matrix tests to assert stable DIXMGR message shape across direct handlers and router paths.
+- Diagnostics metadata consolidation:
+  - Added centralized internal diagnostics catalog constants for operations and codes.
+  - Refactored handlers and router to use the catalog to reduce code drift risk.
+- New test suites and integration coverage:
+  - `TsvImporterTests`, `TsvExporterTests`
+  - `XmlImporterTests`, `XmlExporterTests`
+  - `ServiceCollectionExtensionsTests`, `FormatRouterContractTests`
+
 - `CsvImporterOptions` — Configurable `Encoding` (default UTF-8) and `Delimiter` (default `,`) for `CsvImporter`.
 - `CsvExporterOptions` — Configurable `Encoding` (default UTF-8, no BOM), `Delimiter`, and opt-in `SanitizeFormulaCells` flag for `CsvExporter`.
 - `ExcelImporterOptions.SheetName` — Import a specific worksheet by name (case-insensitive).

@@ -4,6 +4,7 @@ using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
+using DataImportExportManager.Diagnostics;
 using DataImportExportManager.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -38,7 +39,7 @@ public sealed partial class CsvImporter : IDataImporter
         _delimiter = resolved.Delimiter;
         if (resolved.Delimiter is '"' or '\r' or '\n')
             throw new ArgumentException(
-                "The delimiter cannot be a double-quote, carriage-return, or line-feed character.",
+                ContractDiagnostics.BuildMessage(SupportedExtensionValue, ContractDiagnostics.Operations.Config, ContractDiagnostics.Codes.InvalidDelimiter, "The delimiter cannot be a double-quote, carriage-return, or line-feed character."),
                 nameof(options));
     }
 
@@ -114,13 +115,13 @@ public sealed partial class CsvImporter : IDataImporter
                     }
                     else if (c == _delimiter)
                     {
-                        currentRow.Add(fieldBuffer.ToString());
+                        currentRow.Add(fieldBuffer.ToString().Trim());
                         fieldBuffer.Clear();
                         skipNextLf = false;
                     }
                     else if (c == '\r')
                     {
-                        currentRow.Add(fieldBuffer.ToString());
+                        currentRow.Add(fieldBuffer.ToString().Trim());
                         fieldBuffer.Clear();
                         if (columnHint == 0 && currentRow.Count > 0) columnHint = currentRow.Count;
                         results.Add(currentRow);
@@ -131,7 +132,7 @@ public sealed partial class CsvImporter : IDataImporter
                     {
                         if (!skipNextLf)
                         {
-                            currentRow.Add(fieldBuffer.ToString());
+                            currentRow.Add(fieldBuffer.ToString().Trim());
                             fieldBuffer.Clear();
                             if (columnHint == 0 && currentRow.Count > 0) columnHint = currentRow.Count;
                             results.Add(currentRow);
@@ -162,7 +163,7 @@ public sealed partial class CsvImporter : IDataImporter
         // Flush the final row when the stream does not end with a record terminator.
         if (currentRow.Count > 0 || fieldBuffer.Length > 0)
         {
-            currentRow.Add(fieldBuffer.ToString());
+            currentRow.Add(fieldBuffer.ToString().Trim());
             results.Add(currentRow);
         }
 
@@ -176,5 +177,7 @@ public sealed partial class CsvImporter : IDataImporter
 
     [LoggerMessage(Level = LogLevel.Debug, Message = "CSV import completed with {RowCount} rows in {ElapsedMs}ms")]
     private partial void LogImportCompleted(int rowCount, double elapsedMs);
+
+    private const string SupportedExtensionValue = ".csv";
 }
 
