@@ -258,6 +258,14 @@ Recent diagnostics parity additions include internal machine-readable codes for:
 - Excel import validation (`INVALID_WORKBOOK`, `SHEET_NOT_FOUND`, `BUFFER_LIMIT_EXCEEDED`)
 - Excel export validation (`INVALID_SHEET_NAME`, `ROW_LIMIT_EXCEEDED`)
 
+### Diagnostics Operation Reference (Current)
+
+| Operation | Meaning |
+|-----------|---------|
+| `IMPORT` | Operation occurred while reading/importing source content |
+| `EXPORT` | Operation occurred while writing/exporting destination content |
+| `CONFIG` | Operation occurred while validating configuration/options |
+
 ### Diagnostics Code Reference (Current)
 
 | Code | Primary Surface | Meaning |
