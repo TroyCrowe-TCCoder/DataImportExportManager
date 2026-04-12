@@ -43,6 +43,7 @@ Latest validation state:
 
 ## Required CI Status Checks (Azure DevOps)
 - Require successful run of `dataimportexportmanager-ci.yml` validation stage for pull requests targeting `dev` and `master`.
+- Require successful completion of `validate docs and pipeline contracts` drift guard step in the validation stage.
 - Require successful completion of validation steps: `dotnet restore`, `dotnet build`, and `dotnet test`.
 - Keep diagnostics conformance coverage enforced through the existing test suite included in `dotnet test`.
 - Keep `master` merge configured for delivery packaging/publish execution after merge completion.

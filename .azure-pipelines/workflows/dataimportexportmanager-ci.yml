@@ -30,6 +30,9 @@ stages:
         steps:
           - checkout: self
 
+          - script: pwsh -NoProfile -File scripts/ci/Validate-DocsAndPipelineContracts.ps1
+            displayName: 'validate docs and pipeline contracts'
+
           - task: UseDotNet@2
             displayName: 'Use .NET SDK 10.x'
             inputs:
