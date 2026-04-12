@@ -4,8 +4,8 @@
 - Name: `DataImportExportManager`
 - Last updated: `2026-04-12`
 - Branch: `master`
-- Latest commit: `0e9313e`
-- Working tree: clean
+- Latest commit: `d1bfd67`
+- Working tree at checkpoint: clean
 
 ## Summary
 Modernization and expansion work has progressed from CSV/Excel baseline to multi-format deterministic routing with strong diagnostics governance.
@@ -20,7 +20,7 @@ Implemented and verified in this repo:
 - README diagnostics code/operation tables with sync tests
 
 Latest validation state:
-- Tests: `176/176` passing
+- Tests: `186/186` passing
 - Build: successful
 
 ## Status Matrix
@@ -30,7 +30,7 @@ Latest validation state:
 | Structure and naming | Complete | Library + test layout aligned (`DataImportExportManager` + `DataImportExportManager.Tests`) with deterministic router and per-format import/export implementations. | Preserve consistency for new format additions. |
 | Configuration and options | Complete | Options classes and DI callbacks added for CSV/JSON/NDJSON/XML/Excel scenarios. | Add option-validation tests for any new options added later. |
 | Security and data integrity | Complete (library scope) | Input guards, stream-size limits, XML/JSON validation, deterministic schema enforcement, and controlled diagnostics surface are in place. | Continue to keep security ownership in consuming apps for auth concerns. |
-| Testing and quality | Complete | Broad xUnit coverage including contract, integration-style DI tests, diagnostics conformance tests, and docs-sync guards; latest run `176/176`. | Maintain coverage parity for each new public API/diagnostic code. |
+| Testing and quality | Complete | Broad xUnit coverage including contract, integration-style DI tests, diagnostics conformance tests, and docs-sync guards; latest run `186/186`. | Maintain coverage parity for each new public API/diagnostic code. |
 | Observability and diagnostics | Complete | Structured diagnostics prefix (`[DIXMGR:...]`), centralized catalog (`ContractDiagnostics`), operation/code documentation, and conformance enforcement tests. | Keep catalog/tables/tests synchronized when adding codes. |
 | Performance and resilience | Complete (current scope) | Async import/export paths, size guards, deterministic parsing/export behavior, and existing performance-conscious implementation patterns retained. | Add targeted benchmarks only if regression signal appears. |
 | CI/CD and delivery | Partial | Azure DevOps staged workflow at `.azure-pipelines/workflows/dataimportexportmanager-ci.yml` validates `feature/*`/`dev` flow and PRs, and runs delivery packaging on `master` merge with branch/build-scoped package artifacts. | Apply/verify Azure DevOps branch policies for PR targets, approvals, and direct-push restrictions using the checklist. |
