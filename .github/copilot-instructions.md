@@ -16,6 +16,7 @@ This repository instruction file should contain only project-specific context, d
 - When reporting readiness for next steps, include a concise summary of what the next steps entail.
 - Bundle all proposed choices into the next approved execution step and proceed automatically, avoiding option lists.
 - After each approved bundle, check in and push changes to origin consistently.
+- When requesting approval for the next bundle, provide a detailed description of the planned bundle before asking for approval.
 
 ## Project-Specific Deviations
 - Repository remote or hosting context: Azure DevOps Git repository (`origin`: `https://dev.azure.com/tcrowe0170/_git/DataImportExportManager`).
