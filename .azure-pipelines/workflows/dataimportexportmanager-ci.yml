@@ -30,6 +30,12 @@ stages:
         steps:
           - checkout: self
 
+          - script: pwsh -NoProfile -File scripts/ci/Validate-ModernizationStatusMetadata.ps1
+            displayName: 'validate modernization status metadata'
+
+          - script: pwsh -NoProfile -File scripts/ci/Validate-MarkdownLinks.ps1
+            displayName: 'validate markdown links'
+
           - script: pwsh -NoProfile -File scripts/ci/Validate-DocsAndPipelineContracts.ps1
             displayName: 'validate docs and pipeline contracts'
 

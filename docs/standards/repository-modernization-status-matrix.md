@@ -4,7 +4,7 @@
 - Name: `DataImportExportManager`
 - Last updated: `2026-04-12`
 - Branch: `master`
-- Latest commit: `b19877d`
+- Latest commit: `be6c217`
 - Working tree at checkpoint: clean
 
 ## Summary
@@ -43,6 +43,8 @@ Latest validation state:
 
 ## Required CI Status Checks (Azure DevOps)
 - Require successful run of `dataimportexportmanager-ci.yml` validation stage for pull requests targeting `dev` and `master`.
+- Require successful completion of `validate modernization status metadata` step in the validation stage.
+- Require successful completion of `validate markdown links` step in the validation stage.
 - Require successful completion of `validate docs and pipeline contracts` drift guard step in the validation stage.
 - Require successful completion of validation steps: `dotnet restore`, `dotnet build`, and `dotnet test`.
 - Keep diagnostics conformance coverage enforced through the existing test suite included in `dotnet test`.
