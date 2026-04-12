@@ -8,6 +8,14 @@ Use this checklist to enforce the repository flow:
 - `dev`: integration and validation gate
 - `master`: promotion and delivery gate
 
+## Operator Runbook (Azure DevOps UI)
+1. Open `Repos` -> `Branches`.
+2. On `dev`, open branch context menu -> `Branch policies` and configure required PR/build settings.
+3. On `master`, open branch context menu -> `Branch policies` and configure owner-approval and promotion settings.
+4. Open branch context menu -> `Security` for both `dev` and `master`.
+5. Apply contributor restrictions (`Contribute`, `Bypass policies`, `Force push`) and owner permissions.
+6. Save changes and verify policy scopes are set to the intended branch refs.
+
 ## `dev` Branch Policy Checklist
 - Require pull requests for all changes.
 - Require minimum reviewers (recommended: `1` or more).
@@ -34,8 +42,8 @@ For repository owner:
 - Allow approval/completion permissions needed for `dev -> master` promotion.
 
 ## Validation Sequence
-1. Push a feature branch to remote.
-2. Open PR from feature branch to `dev`.
+1. Push a local branch to its remote branch.
+2. Open PR from the remote branch to `dev`.
 3. Verify required validation passes before merge to `dev`.
 4. Open PR from `dev` to `master`.
 5. Verify owner approval is required and enforced.

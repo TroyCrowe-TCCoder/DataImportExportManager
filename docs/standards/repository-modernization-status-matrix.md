@@ -42,7 +42,7 @@ Latest validation state:
 - Keep `master` merge configured for delivery packaging/publish execution after merge completion.
 
 ## Required Branch Governance (Azure DevOps)
-- Enforce contributor workflow: `feature/*` pull requests into `dev` only.
+- Enforce contributor workflow: local branch pushed to remote branch, then pull request into `dev` only.
 - Enforce promotion workflow: `dev` pull requests into `master` only.
 - Disallow direct pushes to `dev` and `master` for non-owner users.
 - Require repository owner approval before completing `dev` -> `master` pull requests.
