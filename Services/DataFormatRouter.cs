@@ -91,6 +91,13 @@ public sealed class DataFormatRouter : IDataFormatRouter
                 ContractDiagnostics.BuildImportMessage(normalizedExtension, ContractDiagnostics.Codes.Contract, ex.Message),
                 ex);
         }
+        catch (ArgumentException ex) when (!HasDiagnosticPrefix(ex.Message))
+        {
+            throw new ArgumentException(
+                ContractDiagnostics.BuildConfigMessage(normalizedExtension, ContractDiagnostics.Codes.Contract, ex.Message),
+                ex.ParamName,
+                ex);
+        }
     }
 
     private static async ValueTask ExecuteExportAsync(
@@ -108,6 +115,13 @@ public sealed class DataFormatRouter : IDataFormatRouter
         {
             throw new InvalidOperationException(
                 ContractDiagnostics.BuildExportMessage(normalizedExtension, ContractDiagnostics.Codes.Contract, ex.Message),
+                ex);
+        }
+        catch (ArgumentException ex) when (!HasDiagnosticPrefix(ex.Message))
+        {
+            throw new ArgumentException(
+                ContractDiagnostics.BuildConfigMessage(normalizedExtension, ContractDiagnostics.Codes.Contract, ex.Message),
+                ex.ParamName,
                 ex);
         }
     }

@@ -58,6 +58,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- `DataFormatRouter` now wraps previously unprefixed handler `ArgumentException` failures during routed import/export with deterministic diagnostics (`[DIXMGR:<extension>:CONFIG:CONTRACT]`) while preserving inner exception context.
 - All constructors accept optional parameters: `ILogger<T>? logger = null` falls back to `NullLogger<T>.Instance`; options classes default to sensible values. Manual construction no longer requires any arguments (e.g., `new CsvImporter()`).
 - `CsvExporter` CSV injection sanitization is now **opt-in** via `CsvExporterOptions.SanitizeFormulaCells` (default `false`). Previously sanitization was always applied, silently mutating consumer data.
 - `ExcelImporter` stores the full `ExcelImporterOptions` object instead of only `MaxBufferSize`.
