@@ -28,6 +28,8 @@ DataImportExportManager/
 │   ├── IDataImporter.cs         # Stream → tabular data
 │   ├── IDataExporter.cs         # Tabular data → stream
 │   └── IDataFormatRouter.cs     # Deterministic format selection
+├── Contracts/                   # Public data contracts
+│   └── TabularImportResult.cs   # Columns + data rows import shape
 ├── Importers/                   # IDataImporter implementations
 │   ├── CsvImporter.cs
 │   ├── CsvImporterOptions.cs
@@ -53,7 +55,8 @@ DataImportExportManager/
 ├── Services/                    # Routing/orchestration
 │   └── DataFormatRouter.cs
 └── Extensions/                  # DI registration
-    └── ServiceCollectionExtensions.cs
+    ├── ServiceCollectionExtensions.cs
+    └── DataImportSchemaExtensions.cs
 
 DataImportExportManager.Tests/   # xUnit test project
 ├── CsvImporterTests.cs
@@ -175,6 +178,57 @@ var secondSheetImporter = new ExcelImporter(new ExcelImporterOptions { SheetInde
 ```csharp
 await using var stream = File.OpenRead("data.csv");
 IReadOnlyList<IReadOnlyList<string>> rows = await new CsvImporter().ImportAsync(stream);
+```
+
+### Import and Extract Field Names for Dynamic Mapping
+
+When the first row represents field names (for example, Excel header row), use schema extraction to keep field names in the imported data while also exposing a reusable column set:
+
+```csharp
+using DataImportExportManager.Extensions;
+
+await using var stream = File.OpenRead("data.xlsx");
+var result = await router.ImportWithSchemaAsync(".xlsx", stream);
+
+IReadOnlyList<string> columns = result.Columns; // header/field names
+IReadOnlyList<IReadOnlyList<string>> allRows = result.Rows;      // includes header row
+IReadOnlyList<IReadOnlyList<string>> dataRows = result.DataRows; // excludes header row
+```
+
+If tuple-based consumption is preferred:
+
+```csharp
+var (headers, dataRows) = await router.ImportWithSchemaTupleAsync(".xlsx", stream);
+```
+
+If both shapes are needed from one call (object + tuple projection):
+
+```csharp
+var (result, headers, dataRows) = await router.ImportWithSchemaBundleAsync(".xlsx", stream);
+```
+
+### Generate Downloadable Example Import Files
+
+Use the router and extension to generate a format-specific example file (CSV/TSV/JSON/NDJSON/XML/XLSX) from one shared code path:
+
+```csharp
+using DataImportExportManager.Extensions;
+
+await using var destination = File.Create("customer-template.csv");
+await router.CreateExampleImportFileAsync(
+    ".csv",
+    ["CustomerId", "CustomerName", "Email"],
+    destination);
+```
+
+You can also pass a custom sample row:
+
+```csharp
+await router.CreateExampleImportFileAsync(
+    ".json",
+    ["CustomerId", "CustomerName"],
+    destination,
+    ["1001", "Ada Lovelace"]);
 ```
 
 ## Configuration Reference
