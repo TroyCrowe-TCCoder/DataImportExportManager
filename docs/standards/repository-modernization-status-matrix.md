@@ -4,7 +4,7 @@
 - Name: `DataImportExportManager`
 - Last updated: `2026-04-21`
 - Branch: `master`
-- Latest commit: `08c5b67`
+- Latest commit: `89e28d2`
 - Working tree at checkpoint: clean
 
 ## Summary
@@ -72,7 +72,7 @@ Latest validation state:
 
 ## Session Handoff / Resume Notes
 To continue from this exact checkpoint:
-1. Pull latest `master`.
+1. Pull latest `dev`.
 2. Start next approved bundle from diagnostics backlog or documentation/guard drift backlog.
 3. Follow enforced execution cadence: implement -> validate -> commit -> push.
 
