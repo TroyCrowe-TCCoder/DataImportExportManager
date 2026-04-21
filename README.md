@@ -87,21 +87,19 @@ dotnet build
 dotnet test
 ```
 
-### Branch Governance and Delivery Flow
+### Branch Governance Flow
 
 Repository governance follows:
-`local branch -> remote branch -> PR to dev -> PR to master -> delivery on master merge`.
+`local branch -> remote branch -> PR to dev -> PR to master`.
 
 For required Azure DevOps branch-policy settings and operator steps, see:
 `docs/standards/azure-devops-branch-policy-checklist.md`.
 
-### Delivery Artifacts (Master Merge)
+### CI Validation Scope
 
-On `master` merge, the delivery stage packs `DataImportExportManager.csproj` and publishes NuGet package artifacts to the pipeline artifact store.
+This repository uses CI for validation automation (restore/build/test and documentation guards).
 
-Artifact naming is deterministic and build-scoped:
-- Artifact name: `nuget-packages-<BuildId>`
-- Package output path: `$(Build.ArtifactStagingDirectory)/packages/<SourceBranchName>/<BuildId>`
+As a referenced class library, this repository does not require a standalone master-delivery pipeline.
 
 ## Usage
 
