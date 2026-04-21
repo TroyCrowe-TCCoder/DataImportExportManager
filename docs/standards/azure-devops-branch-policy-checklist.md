@@ -2,7 +2,7 @@
 
 ## Purpose
 Use this checklist to enforce the repository flow:
-`local branch -> remote branch -> PR to dev -> PR to master -> delivery on master merge`.
+`local branch -> remote branch -> PR to dev -> PR to master`.
 
 ## Quick Start (5-Minute Setup)
 1. Set default branch to `dev`.
@@ -13,7 +13,7 @@ Use this checklist to enforce the repository flow:
 
 ## Branch Targets
 - `dev`: integration and validation gate
-- `master`: promotion and delivery gate
+- `master`: promotion gate
 
 ## Operator Runbook (Azure DevOps UI)
 1. Open `Repos` -> `Branches`.
@@ -43,7 +43,7 @@ Use this checklist to enforce the repository flow:
 - Require repository owner approval for `dev -> master` promotions.
 - Restrict direct pushes for non-owner users.
 - Restrict policy bypass for non-owner users.
-- Keep merge completion configured to trigger master delivery pipeline execution.
+- Keep merge completion governed by approval + policy checks only.
 
 ## Permissions Guidance
 For contributor identities or groups:
@@ -61,4 +61,4 @@ For repository owner:
 3. Verify required validation passes before merge to `dev`.
 4. Open PR from `dev` to `master`.
 5. Verify owner approval is required and enforced.
-6. Merge to `master` and verify delivery pipeline run starts.
+6. Merge to `master` and verify branch protection and policy enforcement remain intact.

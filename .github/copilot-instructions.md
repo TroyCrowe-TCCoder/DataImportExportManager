@@ -27,17 +27,20 @@ This repository instruction file should contain only project-specific context, d
 - Deployment target names or environment constraints: Pack/consume as a .NET 10 class library; do not introduce app-host-specific wiring in this repo.
 - Meaningful integration relationships or exceptions: Consumers own orchestration, persistence, transport, and security boundaries; this repo focuses on deterministic format translation and data fidelity.
 - All importer/exporter selection must be deterministic; the UI provides the format, and this utility should resolve and execute the appropriate importer/exporter based on explicit format input.
+- Import schema results must be consumable as tuple-shaped header/data output.
+- Provide downloadable example import templates for each supported format.
 
 ## Repository Branching and Check-In Governance
 - Branch flow is enforced as: `local branch` -> `remote branch` -> PR to `dev` -> PR to `master`.
 - Contributors other than repository owner must open pull requests from their branch into `dev` only.
 - Direct pushes to `dev` and `master` are disallowed for non-owner users.
 - Merge from `dev` to `master` requires repository owner approval.
-- `master` merge completion is expected to run the delivery workflow.
+- `master` merge completion remains PR-governed with no direct contributor check-ins.
 
 ## Continuous Integration Preferences
 - Run build/tests on `feature/*` pushes, `dev` pushes, and PRs targeting `dev` or `master`.
-- Do not run test execution on `master` merge CI; run delivery packaging/publish on `master` merge.
+- Keep CI focused on validation automation (restore/build/test and docs guards).
+- For this class library, do not require a delivery pipeline; only use CI pipeline for test automation/validation as needed because it is consumed by other applications and not standalone.
 
 ## Repository-Specific Performance Additions
 - Add only deviations from the global performance baseline.
