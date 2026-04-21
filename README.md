@@ -205,6 +205,22 @@ If both shapes are needed from one call (object + tuple projection):
 var (result, headers, dataRows) = await router.ImportWithSchemaBundleAsync(".xlsx", stream);
 ```
 
+Validate imported headers against the current table schema before processing data:
+
+```csharp
+var validation = result.ValidateSchema(["CustomerId", "CustomerName", "Email"]);
+
+if (!validation.IsMatch)
+{
+    // Existing mapping should be removed when mismatch is detected
+    // (validation.ShouldDeleteExistingMapping == true)
+
+    // Present available options to the caller/UI:
+    // - SchemaMismatchAction.CorrectSourceFile
+    // - SchemaMismatchAction.ContinueWithRemap
+}
+```
+
 ### Generate Downloadable Example Import Files
 
 Use the router and extension to generate a format-specific example file (CSV/TSV/JSON/NDJSON/XML/XLSX) from one shared code path:
