@@ -205,6 +205,44 @@ If both shapes are needed from one call (object + tuple projection):
 var (result, headers, dataRows) = await router.ImportWithSchemaBundleAsync(".xlsx", stream);
 ```
 
+Validate imported headers against the current table schema before processing data:
+
+```csharp
+var validation = result.ValidateSchema(["CustomerId", "CustomerName", "Email"]);
+
+if (!validation.IsMatch)
+{
+    // Existing mapping should be removed when mismatch is detected
+    // (validation.ShouldDeleteExistingMapping == true)
+
+    // Present available options to the caller/UI:
+    // - SchemaMismatchAction.CorrectSourceFile
+    // - SchemaMismatchAction.ContinueWithRemap
+}
+```
+
+Avoid reuploading on mismatch by caching the imported payload in a short-lived tenant-scoped session:
+
+```csharp
+using DataImportExportManager.Interfaces;
+
+// Register once (for example, during app startup):
+// services.AddImportSchemaSessionCache(TimeSpan.FromMinutes(20));
+
+var sessionId = await sessionCache.StoreAsync(
+    tenantId: "tenant-001",
+    subjectId: "user-123",
+    importResult: result);
+
+// Later, after the user chooses ContinueWithRemap:
+var cachedSession = await sessionCache.TryGetAsync("tenant-001", "user-123", sessionId);
+if (cachedSession is not null)
+{
+    var cachedImport = cachedSession.ImportResult;
+    // Continue remap flow without asking the user to upload the file again.
+}
+```
+
 ### Generate Downloadable Example Import Files
 
 Use the router and extension to generate a format-specific example file (CSV/TSV/JSON/NDJSON/XML/XLSX) from one shared code path:

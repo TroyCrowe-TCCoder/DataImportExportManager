@@ -9,6 +9,104 @@ using DataImportExportManager.Interfaces;
 public static class DataImportSchemaExtensions
 {
     /// <summary>
+    /// Validates imported headers against an expected schema column set.
+    /// </summary>
+    /// <param name="importResult">The import result containing extracted headers.</param>
+    /// <param name="expectedColumns">The expected target schema columns.</param>
+    /// <param name="comparer">Optional comparer used for column-name matching.</param>
+    /// <returns>A <see cref="SchemaValidationResult"/> describing schema match or mismatch details.</returns>
+    public static SchemaValidationResult ValidateSchema(
+        this TabularImportResult importResult,
+        IReadOnlyList<string> expectedColumns,
+        StringComparer? comparer = null)
+    {
+        ArgumentNullException.ThrowIfNull(importResult);
+        return ValidateSchema(importResult.Columns, expectedColumns, comparer);
+    }
+
+    /// <summary>
+    /// Validates imported headers against an expected schema column set.
+    /// </summary>
+    /// <param name="importedHeaders">The imported header fields.</param>
+    /// <param name="expectedColumns">The expected target schema columns.</param>
+    /// <param name="comparer">Optional comparer used for column-name matching.</param>
+    /// <returns>A <see cref="SchemaValidationResult"/> describing schema match or mismatch details.</returns>
+    public static SchemaValidationResult ValidateSchema(
+        this IReadOnlyList<string> importedHeaders,
+        IReadOnlyList<string> expectedColumns,
+        StringComparer? comparer = null)
+    {
+        ArgumentNullException.ThrowIfNull(importedHeaders);
+        ArgumentNullException.ThrowIfNull(expectedColumns);
+
+        if (expectedColumns.Count == 0)
+        {
+            throw new ArgumentException("Expected columns cannot be empty.", nameof(expectedColumns));
+        }
+
+        var comparerToUse = comparer ?? StringComparer.OrdinalIgnoreCase;
+        var normalizedExpected = NormalizeExpectedColumns(expectedColumns, comparerToUse);
+        var normalizedImported = NormalizeImportedHeaders(importedHeaders);
+
+        var expectedSet = new HashSet<string>(normalizedExpected, comparerToUse);
+        var importedSet = new HashSet<string>(normalizedImported, comparerToUse);
+        var missingColumns = new List<string>();
+        var extraColumns = new List<string>();
+        var duplicateIncomingColumns = new List<string>();
+
+        foreach (var expected in normalizedExpected)
+        {
+            if (!importedSet.Contains(expected) && !ContainsValue(missingColumns, expected, comparerToUse))
+            {
+                missingColumns.Add(expected);
+            }
+        }
+
+        foreach (var imported in normalizedImported)
+        {
+            if (!expectedSet.Contains(imported) && !ContainsValue(extraColumns, imported, comparerToUse))
+            {
+                extraColumns.Add(imported);
+            }
+        }
+
+        var incomingCounts = new Dictionary<string, int>(comparerToUse);
+        foreach (var imported in normalizedImported)
+        {
+            incomingCounts.TryGetValue(imported, out var currentCount);
+            incomingCounts[imported] = currentCount + 1;
+            if (currentCount == 1)
+            {
+                duplicateIncomingColumns.Add(imported);
+            }
+        }
+
+        var isMatch = missingColumns.Count == 0 && extraColumns.Count == 0 && duplicateIncomingColumns.Count == 0;
+        if (isMatch)
+        {
+            return new SchemaValidationResult(
+                IsMatch: true,
+                RequiresRemap: false,
+                ShouldDeleteExistingMapping: false,
+                MissingColumns: [],
+                ExtraColumns: [],
+                DuplicateIncomingColumns: [],
+                AvailableActions: [SchemaMismatchAction.None],
+                DecisionCode: SchemaValidationResult.SchemaMatchCode);
+        }
+
+        return new SchemaValidationResult(
+            IsMatch: false,
+            RequiresRemap: true,
+            ShouldDeleteExistingMapping: true,
+            MissingColumns: missingColumns,
+            ExtraColumns: extraColumns,
+            DuplicateIncomingColumns: duplicateIncomingColumns,
+            AvailableActions: [SchemaMismatchAction.CorrectSourceFile, SchemaMismatchAction.ContinueWithRemap],
+            DecisionCode: SchemaValidationResult.SchemaMismatchCode);
+    }
+
+    /// <summary>
     /// Imports tabular data once and returns both rich and tuple-shaped schema results.
     /// </summary>
     /// <param name="importer">The importer to execute.</param>
@@ -205,5 +303,56 @@ public static class DataImportSchemaExtensions
         }
 
         return sampleRow;
+    }
+
+    private static string[] NormalizeExpectedColumns(IReadOnlyList<string> expectedColumns, StringComparer comparer)
+    {
+        var normalizedExpected = new string[expectedColumns.Count];
+        for (var i = 0; i < expectedColumns.Count; i++)
+        {
+            var expected = expectedColumns[i];
+            if (string.IsNullOrWhiteSpace(expected))
+            {
+                throw new ArgumentException("Expected columns cannot contain null, empty, or whitespace values.", nameof(expectedColumns));
+            }
+
+            normalizedExpected[i] = expected.Trim();
+        }
+
+        var uniquenessCheck = new HashSet<string>(comparer);
+        foreach (var expected in normalizedExpected)
+        {
+            if (!uniquenessCheck.Add(expected))
+            {
+                throw new ArgumentException("Expected columns cannot contain duplicate names.", nameof(expectedColumns));
+            }
+        }
+
+        return normalizedExpected;
+    }
+
+    private static string[] NormalizeImportedHeaders(IReadOnlyList<string> importedHeaders)
+    {
+        var normalizedImported = new string[importedHeaders.Count];
+        for (var i = 0; i < importedHeaders.Count; i++)
+        {
+            var current = importedHeaders[i];
+            normalizedImported[i] = current is null ? string.Empty : current.Trim();
+        }
+
+        return normalizedImported;
+    }
+
+    private static bool ContainsValue(List<string> source, string candidate, StringComparer comparer)
+    {
+        for (var i = 0; i < source.Count; i++)
+        {
+            if (comparer.Equals(source[i], candidate))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

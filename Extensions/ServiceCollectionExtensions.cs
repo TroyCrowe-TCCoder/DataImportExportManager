@@ -13,6 +13,22 @@ using Microsoft.Extensions.DependencyInjection;
 public static class ServiceCollectionExtensions
 {
     /// <summary>
+    /// Registers the in-memory import schema session cache used for temporary no-reupload workflows.
+    /// </summary>
+    /// <param name="services">The service collection to add to.</param>
+    /// <param name="defaultTtl">Optional default TTL for cached sessions.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> for chaining.</returns>
+    public static IServiceCollection AddImportSchemaSessionCache(
+        this IServiceCollection services,
+        TimeSpan? defaultTtl = null)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.AddSingleton<IImportSchemaSessionCache>(_ => new InMemoryImportSchemaSessionCache(defaultTtl));
+        return services;
+    }
+
+    /// <summary>
     /// Registers all DataImportExportManager importers and exporters with the
     /// dependency injection container.
     /// </summary>

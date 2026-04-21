@@ -12,7 +12,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `DataImportSchemaExtensions.ImportWithSchemaAsync(...)` for both `IDataImporter` and `IDataFormatRouter` to standardize first-row header extraction across formats.
 - `DataImportSchemaExtensions.ImportWithSchemaTupleAsync(...)` for both `IDataImporter` and `IDataFormatRouter` to return `(Headers, DataRows)` tuple results.
 - `DataImportSchemaExtensions.ImportWithSchemaBundleAsync(...)` for both `IDataImporter` and `IDataFormatRouter` to return both `TabularImportResult` and `(Headers, DataRows)` from a single import call.
+- `Contracts/SchemaValidationResult` and `Contracts/SchemaMismatchAction` for deterministic schema-match outcomes, remap-required signaling, and caller action options.
+- `Contracts/ImportSchemaSession` and `IImportSchemaSessionCache` for temporary tenant-scoped caching of imported payloads during schema decision workflows.
+- `DataImportSchemaExtensions.ValidateSchema(...)` overloads for validating imported headers against expected schema with missing/extra/duplicate diagnostics.
 - `DataImportSchemaExtensions.CreateExampleImportFileAsync(...)` to generate downloadable example/template files per supported format using router-selected exporters.
+- `InMemoryImportSchemaSessionCache` and `AddImportSchemaSessionCache(...)` for short-lived no-reupload continue-with-remap flows.
 - `TsvImporter` and `TsvExporter` for deterministic `.tsv` support.
 - `JsonImporterOptions`, `JsonExporterOptions`, `NdjsonImporterOptions`, `NdjsonExporterOptions`, `XmlImporterOptions`, and `XmlExporterOptions` for configurable format behavior with deterministic defaults.
 - `.jsonl` alias support in `DataFormatRouter` (normalized to `.ndjson`).
