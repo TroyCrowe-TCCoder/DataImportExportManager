@@ -4,7 +4,7 @@
 - Name: `DataImportExportManager`
 - Last updated: `2026-04-21`
 - Branch: `master`
-- Latest commit: `89e28d2`
+- Latest commit: `8f6054c`
 - Working tree at checkpoint: clean
 
 ## Summary
@@ -20,8 +20,13 @@ Implemented and verified in this repo:
 - README diagnostics code/operation tables with sync tests
 
 Latest validation state:
-- Tests: `200/200` passing
+- Tests: `213/213` passing
 - Build: successful
+
+Latest session checkpoint outcomes:
+- Schema mismatch decision support implemented (`ValidateSchema`, `SchemaValidationResult`, `SchemaMismatchAction`) with deterministic remap-required signaling.
+- Tenant/subject-scoped temporary import session caching implemented (`IImportSchemaSessionCache`, `InMemoryImportSchemaSessionCache`) to support continue-with-remap without file reupload.
+- Branch governance finalized as PR-only (`dev` -> `master`) with owner-required approval and no second approver requirement.
 
 ## Staleness Audit Checkpoint
 - Scope executed: stale-code signals, markdown link integrity, and cross-document flow/governance drift.
@@ -50,7 +55,7 @@ Latest validation state:
 | Structure and naming | Complete | Library + test layout aligned (`DataImportExportManager` + `DataImportExportManager.Tests`) with deterministic router and per-format import/export implementations. | Preserve consistency for new format additions. |
 | Configuration and options | Complete | Options classes and DI callbacks added for CSV/JSON/NDJSON/XML/Excel scenarios. | Add option-validation tests for any new options added later. |
 | Security and data integrity | Complete (library scope) | Input guards, stream-size limits, XML/JSON validation, deterministic schema enforcement, and controlled diagnostics surface are in place. | Continue to keep security ownership in consuming apps for auth concerns. |
-| Testing and quality | Complete | Broad xUnit coverage including contract, integration-style DI tests, diagnostics conformance tests, and docs-sync guards; latest run `200/200`. | Maintain coverage parity for each new public API/diagnostic code. |
+| Testing and quality | Complete | Broad xUnit coverage including contract, integration-style DI tests, diagnostics conformance tests, and docs-sync guards; latest run `213/213`. | Maintain coverage parity for each new public API/diagnostic code. |
 | Observability and diagnostics | Complete | Structured diagnostics prefix (`[DIXMGR:...]`), centralized catalog (`ContractDiagnostics`), operation/code documentation, and conformance enforcement tests. | Keep catalog/tables/tests synchronized when adding codes. |
 | Performance and resilience | Complete (current scope) | Async import/export paths, size guards, deterministic parsing/export behavior, and existing performance-conscious implementation patterns retained. | Add targeted benchmarks only if regression signal appears. |
 | CI/CD and delivery | Complete (library scope) | Azure DevOps validation workflow at `.azure-pipelines/workflows/dataimportexportmanager-ci.yml` validates `feature/*`/`dev` flow and PRs; branch policies enforce PR-only promotion to `master` with no direct contributor pushes to `dev` or `master`. | Keep policy and validation script drift checks synchronized with actual workflow. |
@@ -73,8 +78,9 @@ Latest validation state:
 ## Session Handoff / Resume Notes
 To continue from this exact checkpoint:
 1. Pull latest `dev`.
-2. Start next approved bundle from diagnostics backlog or documentation/guard drift backlog.
+2. Confirm the currently available PR-based bundle state and complete promotion flow (`feature/*` -> `dev` -> `master`) for any active branches.
 3. Follow enforced execution cadence: implement -> validate -> commit -> push.
+4. For schema-mismatch UX, consume `SchemaValidationResult.AvailableActions` and `IImportSchemaSessionCache` session IDs to offer "correct file" vs "continue with remap" without reupload.
 
 Useful verification commands:
 - `dotnet test`
@@ -82,10 +88,10 @@ Useful verification commands:
 - `git status --short`
 
 ## Next Planned Bundle Candidate
-Policy/guard drift hardening:
-1. Keep `README.md`, `.github/copilot-instructions.md`, and branch-policy checklist wording synchronized around PR-only governance.
-2. Periodically verify Azure DevOps policy IDs and settings remain present (`dev` + `master` reviewer/comment policies and master required reviewer).
-3. Re-run docs/metadata guard scripts and refresh this matrix metadata after each approved governance/docs bundle.
+Session-cache hardening and lifecycle controls:
+1. Add optional one-time-consume mode for import sessions so a continued remap flow can invalidate session payload on first successful retrieval.
+2. Add distributed-cache implementation guidance sample for multi-instance hosting scenarios while preserving tenant/subject/session key scoping.
+3. Add targeted tests for cancellation-token paths on `IImportSchemaSessionCache` operations.
 
 ## References
 - `docs/standards/repository-modernization-checklist.md`
