@@ -235,11 +235,12 @@ var sessionId = await sessionCache.StoreAsync(
     importResult: result);
 
 // Later, after the user chooses ContinueWithRemap:
-var cachedSession = await sessionCache.TryGetAsync("tenant-001", "user-123", sessionId);
+var cachedSession = await sessionCache.ConsumeAsync("tenant-001", "user-123", sessionId);
 if (cachedSession is not null)
 {
     var cachedImport = cachedSession.ImportResult;
     // Continue remap flow without asking the user to upload the file again.
+    // Session is invalidated after this retrieval.
 }
 ```
 

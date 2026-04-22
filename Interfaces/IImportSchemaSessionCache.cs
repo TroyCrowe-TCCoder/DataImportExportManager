@@ -38,6 +38,20 @@ public interface IImportSchemaSessionCache
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves a cached session payload once and removes it from the cache.
+    /// </summary>
+    /// <param name="tenantId">The tenant scope identifier.</param>
+    /// <param name="subjectId">The subject/user identifier within the tenant scope.</param>
+    /// <param name="sessionId">The session identifier returned by <see cref="StoreAsync"/>.</param>
+    /// <param name="cancellationToken">A token to monitor for cancellation requests.</param>
+    /// <returns>The cached session payload, or <see langword="null"/> when not found or expired.</returns>
+    ValueTask<ImportSchemaSession?> ConsumeAsync(
+        string tenantId,
+        string subjectId,
+        string sessionId,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Removes a cached session payload.
     /// </summary>
     /// <param name="tenantId">The tenant scope identifier.</param>

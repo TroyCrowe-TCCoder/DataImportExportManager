@@ -81,8 +81,33 @@ public sealed class InMemoryImportSchemaSessionCache : IImportSchemaSessionCache
             return ValueTask.FromResult<ImportSchemaSession?>(null);
         }
 
-        var session = new ImportSchemaSession(sessionId, tenantId.Trim(), subjectId.Trim(), entry.ImportResult, entry.ExpiresAtUtc);
-        return ValueTask.FromResult<ImportSchemaSession?>(session);
+        return ValueTask.FromResult<ImportSchemaSession?>(CreateSession(tenantId, subjectId, sessionId, entry));
+    }
+
+    /// <inheritdoc/>
+    public ValueTask<ImportSchemaSession?> ConsumeAsync(
+        string tenantId,
+        string subjectId,
+        string sessionId,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        ValidateScopeInputs(tenantId, subjectId);
+        ValidateSessionId(sessionId);
+
+        var key = BuildKey(tenantId, subjectId, sessionId);
+        if (!_sessions.TryRemove(key, out var entry))
+        {
+            return ValueTask.FromResult<ImportSchemaSession?>(null);
+        }
+
+        var now = _timeProvider.GetUtcNow();
+        if (entry.ExpiresAtUtc <= now)
+        {
+            return ValueTask.FromResult<ImportSchemaSession?>(null);
+        }
+
+        return ValueTask.FromResult<ImportSchemaSession?>(CreateSession(tenantId, subjectId, sessionId, entry));
     }
 
     /// <inheritdoc/>
@@ -124,6 +149,9 @@ public sealed class InMemoryImportSchemaSessionCache : IImportSchemaSessionCache
 
     private static string BuildKey(string tenantId, string subjectId, string sessionId)
         => $"{tenantId.Trim()}::{subjectId.Trim()}::{sessionId.Trim()}";
+
+    private static ImportSchemaSession CreateSession(string tenantId, string subjectId, string sessionId, CacheEntry entry)
+        => new(sessionId, tenantId.Trim(), subjectId.Trim(), entry.ImportResult, entry.ExpiresAtUtc);
 
     private sealed record CacheEntry(TabularImportResult ImportResult, DateTimeOffset ExpiresAtUtc);
 }
