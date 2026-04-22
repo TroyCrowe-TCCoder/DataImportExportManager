@@ -221,6 +221,22 @@ if (!validation.IsMatch)
 }
 ```
 
+For multi-instance deployments, prefer distributed cache backing:
+
+```csharp
+using Microsoft.Extensions.Caching.StackExchangeRedis;
+
+// Register a distributed cache provider first (example: Redis)
+services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = "localhost:6379";
+    options.InstanceName = "dixmgr:";
+});
+
+// Register distributed session cache implementation
+services.AddDistributedImportSchemaSessionCache(TimeSpan.FromMinutes(20));
+```
+
 Avoid reuploading on mismatch by caching the imported payload in a short-lived tenant-scoped session:
 
 ```csharp
