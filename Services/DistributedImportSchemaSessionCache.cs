@@ -1,0 +1,200 @@
+namespace DataImportExportManager.Services;
+
+using System.Text.Json;
+using DataImportExportManager.Contracts;
+using DataImportExportManager.Interfaces;
+using Microsoft.Extensions.Caching.Distributed;
+
+/// <summary>
+/// Distributed-cache implementation of <see cref="IImportSchemaSessionCache"/> for multi-instance hosting.
+/// </summary>
+public sealed class DistributedImportSchemaSessionCache : IImportSchemaSessionCache
+{
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
+    {
+        PropertyNameCaseInsensitive = false,
+    };
+
+    private readonly IDistributedCache _cache;
+    private readonly TimeProvider _timeProvider;
+    private readonly TimeSpan _defaultTtl;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="DistributedImportSchemaSessionCache"/> class.
+    /// </summary>
+    /// <param name="cache">The distributed cache backend.</param>
+    /// <param name="defaultTtl">Default session TTL when not provided per call.</param>
+    /// <param name="timeProvider">Optional time provider for deterministic testing.</param>
+    public DistributedImportSchemaSessionCache(
+        IDistributedCache cache,
+        TimeSpan? defaultTtl = null,
+        TimeProvider? timeProvider = null)
+    {
+        ArgumentNullException.ThrowIfNull(cache);
+
+        var effectiveDefaultTtl = defaultTtl ?? TimeSpan.FromMinutes(20);
+        if (effectiveDefaultTtl <= TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(defaultTtl), "Default TTL must be greater than zero.");
+        }
+
+        _cache = cache;
+        _defaultTtl = effectiveDefaultTtl;
+        _timeProvider = timeProvider ?? TimeProvider.System;
+    }
+
+    /// <inheritdoc/>
+    public async ValueTask<string> StoreAsync(
+        string tenantId,
+        string subjectId,
+        TabularImportResult importResult,
+        TimeSpan? timeToLive = null,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        ValidateScopeInputs(tenantId, subjectId);
+        ArgumentNullException.ThrowIfNull(importResult);
+
+        var ttl = timeToLive ?? _defaultTtl;
+        if (ttl <= TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(timeToLive), "TTL must be greater than zero.");
+        }
+
+        var now = _timeProvider.GetUtcNow();
+        var sessionId = Guid.NewGuid().ToString("N");
+        var expiresAtUtc = now.Add(ttl);
+        var key = BuildKey(tenantId, subjectId, sessionId);
+
+        var entry = new CacheEntry(importResult, expiresAtUtc);
+        var payload = JsonSerializer.SerializeToUtf8Bytes(entry, JsonOptions);
+        await _cache.SetAsync(
+            key,
+            payload,
+            new DistributedCacheEntryOptions { AbsoluteExpiration = expiresAtUtc },
+            cancellationToken).ConfigureAwait(false);
+
+        return sessionId;
+    }
+
+    /// <inheritdoc/>
+    public async ValueTask<ImportSchemaSession?> TryGetAsync(
+        string tenantId,
+        string subjectId,
+        string sessionId,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        ValidateScopeInputs(tenantId, subjectId);
+        ValidateSessionId(sessionId);
+
+        var key = BuildKey(tenantId, subjectId, sessionId);
+        var payload = await _cache.GetAsync(key, cancellationToken).ConfigureAwait(false);
+        if (payload is null)
+        {
+            return null;
+        }
+
+        var entry = DeserializeEntry(payload);
+        var now = _timeProvider.GetUtcNow();
+        if (entry.ExpiresAtUtc <= now)
+        {
+            await _cache.RemoveAsync(key, cancellationToken).ConfigureAwait(false);
+            return null;
+        }
+
+        return CreateSession(tenantId, subjectId, sessionId, entry);
+    }
+
+    /// <inheritdoc/>
+    public async ValueTask<ImportSchemaSession?> ConsumeAsync(
+        string tenantId,
+        string subjectId,
+        string sessionId,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        ValidateScopeInputs(tenantId, subjectId);
+        ValidateSessionId(sessionId);
+
+        var key = BuildKey(tenantId, subjectId, sessionId);
+        var payload = await _cache.GetAsync(key, cancellationToken).ConfigureAwait(false);
+        if (payload is null)
+        {
+            return null;
+        }
+
+        await _cache.RemoveAsync(key, cancellationToken).ConfigureAwait(false);
+
+        var entry = DeserializeEntry(payload);
+        var now = _timeProvider.GetUtcNow();
+        if (entry.ExpiresAtUtc <= now)
+        {
+            return null;
+        }
+
+        return CreateSession(tenantId, subjectId, sessionId, entry);
+    }
+
+    /// <inheritdoc/>
+    public async ValueTask<bool> RemoveAsync(
+        string tenantId,
+        string subjectId,
+        string sessionId,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        ValidateScopeInputs(tenantId, subjectId);
+        ValidateSessionId(sessionId);
+
+        var key = BuildKey(tenantId, subjectId, sessionId);
+        var payload = await _cache.GetAsync(key, cancellationToken).ConfigureAwait(false);
+        if (payload is null)
+        {
+            return false;
+        }
+
+        await _cache.RemoveAsync(key, cancellationToken).ConfigureAwait(false);
+        return true;
+    }
+
+    private static void ValidateScopeInputs(string tenantId, string subjectId)
+    {
+        if (string.IsNullOrWhiteSpace(tenantId))
+        {
+            throw new ArgumentException("TenantId cannot be null, empty, or whitespace.", nameof(tenantId));
+        }
+
+        if (string.IsNullOrWhiteSpace(subjectId))
+        {
+            throw new ArgumentException("SubjectId cannot be null, empty, or whitespace.", nameof(subjectId));
+        }
+    }
+
+    private static void ValidateSessionId(string sessionId)
+    {
+        if (string.IsNullOrWhiteSpace(sessionId))
+        {
+            throw new ArgumentException("SessionId cannot be null, empty, or whitespace.", nameof(sessionId));
+        }
+    }
+
+    private static CacheEntry DeserializeEntry(byte[] payload)
+    {
+        var entry = JsonSerializer.Deserialize<CacheEntry>(payload, JsonOptions);
+        if (entry is null)
+        {
+            throw new InvalidOperationException("Cached session payload could not be deserialized.");
+        }
+
+        return entry;
+    }
+
+    private static string BuildKey(string tenantId, string subjectId, string sessionId)
+        => $"dixmgr-sess::{tenantId.Trim()}::{subjectId.Trim()}::{sessionId.Trim()}";
+
+    private static ImportSchemaSession CreateSession(string tenantId, string subjectId, string sessionId, CacheEntry entry)
+        => new(sessionId, tenantId.Trim(), subjectId.Trim(), entry.ImportResult, entry.ExpiresAtUtc);
+
+    private sealed record CacheEntry(TabularImportResult ImportResult, DateTimeOffset ExpiresAtUtc);
+}

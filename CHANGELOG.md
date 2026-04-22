@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `Contracts/SchemaValidationResult` and `Contracts/SchemaMismatchAction` for deterministic schema-match outcomes, remap-required signaling, and caller action options.
 - `Contracts/ImportSchemaSession` and `IImportSchemaSessionCache` for temporary tenant-scoped caching of imported payloads during schema decision workflows.
 - `IImportSchemaSessionCache.ConsumeAsync(...)` for one-time retrieval/invalidation in continue-with-remap flows.
+- `DistributedImportSchemaSessionCache` and `AddDistributedImportSchemaSessionCache(...)` for multi-instance temporary session caching via `IDistributedCache`.
 - `DataImportSchemaExtensions.ValidateSchema(...)` overloads for validating imported headers against expected schema with missing/extra/duplicate diagnostics.
 - `DataImportSchemaExtensions.CreateExampleImportFileAsync(...)` to generate downloadable example/template files per supported format using router-selected exporters.
 - `InMemoryImportSchemaSessionCache` and `AddImportSchemaSessionCache(...)` for short-lived no-reupload continue-with-remap flows.
