@@ -4,6 +4,7 @@ using DataImportExportManager.Exporters;
 using DataImportExportManager.Importers;
 using DataImportExportManager.Interfaces;
 using DataImportExportManager.Services;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
@@ -25,6 +26,26 @@ public static class ServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
 
         services.AddSingleton<IImportSchemaSessionCache>(_ => new InMemoryImportSchemaSessionCache(defaultTtl));
+        return services;
+    }
+
+    /// <summary>
+    /// Registers the distributed import schema session cache for multi-instance no-reupload workflows.
+    /// </summary>
+    /// <param name="services">The service collection to add to.</param>
+    /// <param name="defaultTtl">Optional default TTL for cached sessions.</param>
+    /// <returns>The same <see cref="IServiceCollection"/> for chaining.</returns>
+    public static IServiceCollection AddDistributedImportSchemaSessionCache(
+        this IServiceCollection services,
+        TimeSpan? defaultTtl = null)
+    {
+        ArgumentNullException.ThrowIfNull(services);
+
+        services.AddSingleton<IImportSchemaSessionCache>(provider =>
+            new DistributedImportSchemaSessionCache(
+                provider.GetRequiredService<IDistributedCache>(),
+                defaultTtl));
+
         return services;
     }
 
