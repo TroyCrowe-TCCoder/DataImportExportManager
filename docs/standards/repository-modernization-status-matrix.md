@@ -4,7 +4,7 @@
 - Name: `DataImportExportManager`
 - Last updated: `2026-04-21`
 - Branch: `master`
-- Latest commit: `b772195`
+- Latest commit: `51dc510`
 - Working tree at checkpoint: clean
 
 ## Summary
@@ -20,12 +20,13 @@ Implemented and verified in this repo:
 - README diagnostics code/operation tables with sync tests
 
 Latest validation state:
-- Tests: `213/213` passing
+- Tests: `222/222` passing
 - Build: successful
 
 Latest session checkpoint outcomes:
 - Schema mismatch decision support implemented (`ValidateSchema`, `SchemaValidationResult`, `SchemaMismatchAction`) with deterministic remap-required signaling.
 - Tenant/subject-scoped temporary import session caching implemented (`IImportSchemaSessionCache`, `InMemoryImportSchemaSessionCache`) to support continue-with-remap without file reupload.
+- Distributed cache session support implemented (`DistributedImportSchemaSessionCache`, `AddDistributedImportSchemaSessionCache`) for multi-instance hosting.
 - Branch governance finalized as PR-only (`dev` -> `master`) with owner-required approval and no second approver requirement.
 
 ## Staleness Audit Checkpoint
@@ -55,7 +56,7 @@ Latest session checkpoint outcomes:
 | Structure and naming | Complete | Library + test layout aligned (`DataImportExportManager` + `DataImportExportManager.Tests`) with deterministic router and per-format import/export implementations. | Preserve consistency for new format additions. |
 | Configuration and options | Complete | Options classes and DI callbacks added for CSV/JSON/NDJSON/XML/Excel scenarios. | Add option-validation tests for any new options added later. |
 | Security and data integrity | Complete (library scope) | Input guards, stream-size limits, XML/JSON validation, deterministic schema enforcement, and controlled diagnostics surface are in place. | Continue to keep security ownership in consuming apps for auth concerns. |
-| Testing and quality | Complete | Broad xUnit coverage including contract, integration-style DI tests, diagnostics conformance tests, and docs-sync guards; latest run `213/213`. | Maintain coverage parity for each new public API/diagnostic code. |
+| Testing and quality | Complete | Broad xUnit coverage including contract, integration-style DI tests, diagnostics conformance tests, and docs-sync guards; latest run `222/222`. | Maintain coverage parity for each new public API/diagnostic code. |
 | Observability and diagnostics | Complete | Structured diagnostics prefix (`[DIXMGR:...]`), centralized catalog (`ContractDiagnostics`), operation/code documentation, and conformance enforcement tests. | Keep catalog/tables/tests synchronized when adding codes. |
 | Performance and resilience | Complete (current scope) | Async import/export paths, size guards, deterministic parsing/export behavior, and existing performance-conscious implementation patterns retained. | Add targeted benchmarks only if regression signal appears. |
 | CI/CD and delivery | Complete (library scope) | Azure DevOps validation workflow at `.azure-pipelines/workflows/dataimportexportmanager-ci.yml` validates `feature/*`/`dev` flow and PRs; branch policies enforce PR-only promotion to `master` with no direct contributor pushes to `dev` or `master`. | Keep policy and validation script drift checks synchronized with actual workflow. |
@@ -78,7 +79,7 @@ Latest session checkpoint outcomes:
 ## Session Handoff / Resume Notes
 To continue from this exact checkpoint:
 1. Pull latest `dev`.
-2. Confirm the currently available PR-based bundle state and complete promotion flow (`feature/*` -> `dev` -> `master`) for any active branches.
+2. Confirm no pending PR bundles remain before starting the next branch from `dev`.
 3. Follow enforced execution cadence: implement -> validate -> commit -> push.
 4. For schema-mismatch UX, consume `SchemaValidationResult.AvailableActions` and `IImportSchemaSessionCache` session IDs to offer "correct file" vs "continue with remap" without reupload.
 
@@ -89,9 +90,9 @@ Useful verification commands:
 
 ## Next Planned Bundle Candidate
 Session-cache hardening and lifecycle controls:
-1. Add optional one-time-consume mode for import sessions so a continued remap flow can invalidate session payload on first successful retrieval.
-2. Add distributed-cache implementation guidance sample for multi-instance hosting scenarios while preserving tenant/subject/session key scoping.
-3. Add targeted tests for cancellation-token paths on `IImportSchemaSessionCache` operations.
+1. Add distributed-cache payload-size and serialization guard rails (max payload policy + deterministic failure behavior).
+2. Add optional cache key-prefix configuration for environment isolation in shared Redis deployments.
+3. Add targeted benchmarks for session cache store/get/consume operations to monitor regression risk.
 
 ## References
 - `docs/standards/repository-modernization-checklist.md`
