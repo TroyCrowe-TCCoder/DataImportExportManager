@@ -3,6 +3,7 @@ namespace DataImportExportManager.Tests;
 using DataImportExportManager.Contracts;
 using DataImportExportManager.Extensions;
 using DataImportExportManager.Interfaces;
+using DataImportExportManager.Interfaces;
 
 public class DataImportSchemaExtensionsTests
 {
@@ -275,6 +276,36 @@ public class DataImportSchemaExtensionsTests
     }
 
     [Fact]
+    public async Task WhenValidateSchemaAsyncMismatchThenPublishesSchemaMismatchEvent()
+    {
+        var publisher = new RecordingEventPublisher();
+        var importResult = new TabularImportResult(
+            ["Id", "LegacyField"],
+            [["Id", "LegacyField"], ["1", "X"]]);
+
+        var result = await importResult.ValidateSchemaAsync(["Id", "Name"], publisher);
+
+        Assert.False(result.IsMatch);
+        Assert.Single(publisher.Events);
+        Assert.Equal(DataImportExportEventNames.SchemaValidationMismatch, publisher.Events[0].EventName);
+        Assert.Equal(SchemaValidationResult.SchemaMismatchCode, publisher.Events[0].DecisionCode);
+    }
+
+    [Fact]
+    public async Task WhenValidateSchemaAsyncMatchThenDoesNotPublishSchemaMismatchEvent()
+    {
+        var publisher = new RecordingEventPublisher();
+        var importResult = new TabularImportResult(
+            ["Id", "Name"],
+            [["Id", "Name"], ["1", "Ada"]]);
+
+        var result = await importResult.ValidateSchemaAsync(["Id", "Name"], publisher);
+
+        Assert.True(result.IsMatch);
+        Assert.Empty(publisher.Events);
+    }
+
+    [Fact]
     public void WhenExpectedColumnsContainDuplicateThenValidateSchemaThrowsArgumentException()
     {
         var importResult = new TabularImportResult(
@@ -367,6 +398,18 @@ public class DataImportSchemaExtensionsTests
             LastExportExtension = extension;
             LastDestination = destination;
             LastData = data;
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    private sealed class RecordingEventPublisher : IDataImportExportEventPublisher
+    {
+        public List<DataImportExportEvent> Events { get; } = [];
+
+        public ValueTask PublishAsync(DataImportExportEvent notification, CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            Events.Add(notification);
             return ValueTask.CompletedTask;
         }
     }

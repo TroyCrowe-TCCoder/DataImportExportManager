@@ -237,6 +237,15 @@ if (!validation.IsMatch)
 }
 ```
 
+If you want schema mismatch notifications to flow through the same API event publisher (for example, toast triggers), use the async publisher-aware overload:
+
+```csharp
+var validation = await result.ValidateSchemaAsync(
+    ["CustomerId", "CustomerName", "Email"],
+    eventPublisher,
+    cancellationToken: cancellationToken);
+```
+
 For multi-instance deployments, prefer distributed cache backing:
 
 ```csharp

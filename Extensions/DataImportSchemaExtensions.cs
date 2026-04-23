@@ -9,6 +9,62 @@ using DataImportExportManager.Interfaces;
 public static class DataImportSchemaExtensions
 {
     /// <summary>
+    /// Validates imported headers against an expected schema and publishes a mismatch notification when remap is required.
+    /// </summary>
+    /// <param name="importResult">The import result containing extracted headers.</param>
+    /// <param name="expectedColumns">The expected target schema columns.</param>
+    /// <param name="eventPublisher">The event publisher used for mismatch notifications.</param>
+    /// <param name="comparer">Optional comparer used for column-name matching.</param>
+    /// <param name="cancellationToken">A cancellation token for notification publishing.</param>
+    /// <returns>A <see cref="SchemaValidationResult"/> describing schema match or mismatch details.</returns>
+    public static ValueTask<SchemaValidationResult> ValidateSchemaAsync(
+        this TabularImportResult importResult,
+        IReadOnlyList<string> expectedColumns,
+        IDataImportExportEventPublisher eventPublisher,
+        StringComparer? comparer = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(importResult);
+        return ValidateSchemaAsync(importResult.Columns, expectedColumns, eventPublisher, comparer, cancellationToken);
+    }
+
+    /// <summary>
+    /// Validates imported headers against an expected schema and publishes a mismatch notification when remap is required.
+    /// </summary>
+    /// <param name="importedHeaders">The imported header fields.</param>
+    /// <param name="expectedColumns">The expected target schema columns.</param>
+    /// <param name="eventPublisher">The event publisher used for mismatch notifications.</param>
+    /// <param name="comparer">Optional comparer used for column-name matching.</param>
+    /// <param name="cancellationToken">A cancellation token for notification publishing.</param>
+    /// <returns>A <see cref="SchemaValidationResult"/> describing schema match or mismatch details.</returns>
+    public static async ValueTask<SchemaValidationResult> ValidateSchemaAsync(
+        this IReadOnlyList<string> importedHeaders,
+        IReadOnlyList<string> expectedColumns,
+        IDataImportExportEventPublisher eventPublisher,
+        StringComparer? comparer = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(importedHeaders);
+        ArgumentNullException.ThrowIfNull(expectedColumns);
+        ArgumentNullException.ThrowIfNull(eventPublisher);
+
+        var validation = ValidateSchema(importedHeaders, expectedColumns, comparer);
+        if (!validation.IsMatch)
+        {
+            await eventPublisher.PublishAsync(
+                new DataImportExportEvent(
+                    EventName: DataImportExportEventNames.SchemaValidationMismatch,
+                    OccurredAtUtc: DateTimeOffset.UtcNow,
+                    DecisionCode: validation.DecisionCode,
+                    AvailableActions: validation.AvailableActions,
+                    Message: "Schema validation mismatch detected."),
+                cancellationToken).ConfigureAwait(false);
+        }
+
+        return validation;
+    }
+
+    /// <summary>
     /// Validates imported headers against an expected schema column set.
     /// </summary>
     /// <param name="importResult">The import result containing extracted headers.</param>
