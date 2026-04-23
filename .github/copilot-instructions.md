@@ -40,6 +40,7 @@ This repository instruction file should contain only project-specific context, d
 - Direct pushes to `dev` and `master` are disallowed for non-owner users.
 - Merge from `dev` to `master` requires repository owner approval (no second approver) while still allowing additional optional approvals.
 - `master` merge completion remains PR-governed with no direct contributor check-ins.
+- PRs must always target the local feature branch into `dev` (never directly to `master`).
 
 ## Continuous Integration Preferences
 - Run build/tests on `feature/*` pushes, `dev` pushes, and PRs targeting `dev` or `master`.
