@@ -10,7 +10,7 @@ using Microsoft.Extensions.Caching.Distributed;
 /// </summary>
 public sealed class DistributedImportSchemaSessionCache : IImportSchemaSessionCache
 {
-    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
+    private static readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web)
     {
         PropertyNameCaseInsensitive = false,
     };
@@ -18,16 +18,20 @@ public sealed class DistributedImportSchemaSessionCache : IImportSchemaSessionCa
     private readonly IDistributedCache _cache;
     private readonly TimeProvider _timeProvider;
     private readonly TimeSpan _defaultTtl;
+    private readonly string _keyPrefix;
+    private readonly int _maxPayloadBytes;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DistributedImportSchemaSessionCache"/> class.
     /// </summary>
     /// <param name="cache">The distributed cache backend.</param>
     /// <param name="defaultTtl">Default session TTL when not provided per call.</param>
+    /// <param name="options">Optional cache options for key prefix and payload-size limits.</param>
     /// <param name="timeProvider">Optional time provider for deterministic testing.</param>
     public DistributedImportSchemaSessionCache(
         IDistributedCache cache,
         TimeSpan? defaultTtl = null,
+        DistributedImportSchemaSessionCacheOptions? options = null,
         TimeProvider? timeProvider = null)
     {
         ArgumentNullException.ThrowIfNull(cache);
@@ -41,6 +45,20 @@ public sealed class DistributedImportSchemaSessionCache : IImportSchemaSessionCa
         _cache = cache;
         _defaultTtl = effectiveDefaultTtl;
         _timeProvider = timeProvider ?? TimeProvider.System;
+
+        var effectiveOptions = options ?? new DistributedImportSchemaSessionCacheOptions();
+        if (string.IsNullOrWhiteSpace(effectiveOptions.KeyPrefix))
+        {
+            throw new ArgumentException("KeyPrefix cannot be null, empty, or whitespace.", nameof(options));
+        }
+
+        if (effectiveOptions.MaxPayloadBytes <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(options), "MaxPayloadBytes must be greater than zero.");
+        }
+
+        _keyPrefix = effectiveOptions.KeyPrefix.Trim();
+        _maxPayloadBytes = effectiveOptions.MaxPayloadBytes;
     }
 
     /// <inheritdoc/>
@@ -67,7 +85,21 @@ public sealed class DistributedImportSchemaSessionCache : IImportSchemaSessionCa
         var key = BuildKey(tenantId, subjectId, sessionId);
 
         var entry = new CacheEntry(importResult, expiresAtUtc);
-        var payload = JsonSerializer.SerializeToUtf8Bytes(entry, JsonOptions);
+        byte[] payload;
+        try
+        {
+            payload = JsonSerializer.SerializeToUtf8Bytes(entry, _jsonOptions);
+        }
+        catch (JsonException ex)
+        {
+            throw new InvalidOperationException("Session payload serialization failed.", ex);
+        }
+
+        if (payload.Length > _maxPayloadBytes)
+        {
+            throw new InvalidOperationException($"Session payload exceeds configured maximum size of {_maxPayloadBytes} bytes.");
+        }
+
         await _cache.SetAsync(
             key,
             payload,
@@ -181,7 +213,7 @@ public sealed class DistributedImportSchemaSessionCache : IImportSchemaSessionCa
 
     private static CacheEntry DeserializeEntry(byte[] payload)
     {
-        var entry = JsonSerializer.Deserialize<CacheEntry>(payload, JsonOptions);
+        var entry = JsonSerializer.Deserialize<CacheEntry>(payload, _jsonOptions);
         if (entry is null)
         {
             throw new InvalidOperationException("Cached session payload could not be deserialized.");
@@ -190,8 +222,8 @@ public sealed class DistributedImportSchemaSessionCache : IImportSchemaSessionCa
         return entry;
     }
 
-    private static string BuildKey(string tenantId, string subjectId, string sessionId)
-        => $"dixmgr-sess::{tenantId.Trim()}::{subjectId.Trim()}::{sessionId.Trim()}";
+    private string BuildKey(string tenantId, string subjectId, string sessionId)
+        => $"{_keyPrefix}::{tenantId.Trim()}::{subjectId.Trim()}::{sessionId.Trim()}";
 
     private static ImportSchemaSession CreateSession(string tenantId, string subjectId, string sessionId, CacheEntry entry)
         => new(sessionId, tenantId.Trim(), subjectId.Trim(), entry.ImportResult, entry.ExpiresAtUtc);

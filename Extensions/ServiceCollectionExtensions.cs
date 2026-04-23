@@ -34,17 +34,23 @@ public static class ServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The service collection to add to.</param>
     /// <param name="defaultTtl">Optional default TTL for cached sessions.</param>
+    /// <param name="configureOptions">Optional callback to configure distributed session cache behavior.</param>
     /// <returns>The same <see cref="IServiceCollection"/> for chaining.</returns>
     public static IServiceCollection AddDistributedImportSchemaSessionCache(
         this IServiceCollection services,
-        TimeSpan? defaultTtl = null)
+        TimeSpan? defaultTtl = null,
+        Action<DistributedImportSchemaSessionCacheOptions>? configureOptions = null)
     {
         ArgumentNullException.ThrowIfNull(services);
+
+        var options = new DistributedImportSchemaSessionCacheOptions();
+        configureOptions?.Invoke(options);
 
         services.AddSingleton<IImportSchemaSessionCache>(provider =>
             new DistributedImportSchemaSessionCache(
                 provider.GetRequiredService<IDistributedCache>(),
-                defaultTtl));
+                defaultTtl,
+                options));
 
         return services;
     }

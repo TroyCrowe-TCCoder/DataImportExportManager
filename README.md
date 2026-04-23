@@ -87,6 +87,20 @@ dotnet build
 dotnet test
 ```
 
+### Session Cache Performance Baseline Checks
+
+Run session-cache baseline checks from the test project:
+
+```bash
+dotnet test --filter "FullyQualifiedName~SessionCachePerformanceTests"
+```
+
+Baseline thresholds are defined in `DataImportExportManager.Tests/SessionCacheBenchmarkBaselines.cs` and currently target:
+- In-memory session cache store/get/consume loop (`1000` iterations) <= `5000ms`
+- Distributed session cache store/get/consume loop (`1000` iterations, in-memory distributed-cache test double) <= `8000ms`
+
+When environment performance characteristics change, update threshold constants in that baseline file and keep this README section in sync.
+
 ### Branch Governance Flow
 
 Repository governance follows:
