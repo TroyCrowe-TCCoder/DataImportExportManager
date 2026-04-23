@@ -17,6 +17,9 @@ This repository instruction file should contain only project-specific context, d
 - Bundle all proposed choices into the next approved execution step and proceed automatically, avoiding option lists.
 - After each approved bundle, check in and push changes to origin consistently.
 - When requesting approval for the next bundle, provide a detailed description of the planned bundle before asking for approval.
+- When reporting PR status, do not provide a PR URL; only state that a PR is available.
+- Before declaring the project complete, evaluate whether certain functionality should be exposed as events instead of coded workflows, prioritizing event-driven extension points where appropriate.
+- Use event-based notifications that can be published back to the API for UI toast notifications, instead of hard-coded notification workflows.
 
 ## Project-Specific Deviations
 - Repository remote or hosting context: Azure DevOps Git repository (`origin`: `https://dev.azure.com/tcrowe0170/_git/DataImportExportManager`).
@@ -29,12 +32,13 @@ This repository instruction file should contain only project-specific context, d
 - All importer/exporter selection must be deterministic; the UI provides the format, and this utility should resolve and execute the appropriate importer/exporter based on explicit format input.
 - Import schema results must be consumable as tuple-shaped header/data output.
 - Provide downloadable example import templates for each supported format.
+- Keep all test projects and test files inside the DataImportExportManager repository so any developer can run and extend tests from the repo clone alone.
 
 ## Repository Branching and Check-In Governance
 - Branch flow is enforced as: `local branch` -> `remote branch` -> PR to `dev` -> PR to `master`.
 - Contributors other than repository owner must open pull requests from their branch into `dev` only.
 - Direct pushes to `dev` and `master` are disallowed for non-owner users.
-- Merge from `dev` to `master` requires repository owner approval.
+- Merge from `dev` to `master` requires repository owner approval (no second approver) while still allowing additional optional approvals.
 - `master` merge completion remains PR-governed with no direct contributor check-ins.
 
 ## Continuous Integration Preferences

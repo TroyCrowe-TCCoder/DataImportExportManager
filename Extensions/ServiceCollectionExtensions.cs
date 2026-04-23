@@ -6,6 +6,7 @@ using DataImportExportManager.Interfaces;
 using DataImportExportManager.Services;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 /// <summary>
 /// Extension methods for <see cref="IServiceCollection"/> to register
@@ -25,7 +26,12 @@ public static class ServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.AddSingleton<IImportSchemaSessionCache>(_ => new InMemoryImportSchemaSessionCache(defaultTtl));
+        services.TryAddSingleton<IDataImportExportEventPublisher, NullDataImportExportEventPublisher>();
+
+        services.AddSingleton<IImportSchemaSessionCache>(provider =>
+            new InMemoryImportSchemaSessionCache(
+                defaultTtl,
+                eventPublisher: provider.GetRequiredService<IDataImportExportEventPublisher>()));
         return services;
     }
 
@@ -34,17 +40,26 @@ public static class ServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The service collection to add to.</param>
     /// <param name="defaultTtl">Optional default TTL for cached sessions.</param>
+    /// <param name="configureOptions">Optional callback to configure distributed session cache behavior.</param>
     /// <returns>The same <see cref="IServiceCollection"/> for chaining.</returns>
     public static IServiceCollection AddDistributedImportSchemaSessionCache(
         this IServiceCollection services,
-        TimeSpan? defaultTtl = null)
+        TimeSpan? defaultTtl = null,
+        Action<DistributedImportSchemaSessionCacheOptions>? configureOptions = null)
     {
         ArgumentNullException.ThrowIfNull(services);
+
+        services.TryAddSingleton<IDataImportExportEventPublisher, NullDataImportExportEventPublisher>();
+
+        var options = new DistributedImportSchemaSessionCacheOptions();
+        configureOptions?.Invoke(options);
 
         services.AddSingleton<IImportSchemaSessionCache>(provider =>
             new DistributedImportSchemaSessionCache(
                 provider.GetRequiredService<IDistributedCache>(),
-                defaultTtl));
+                defaultTtl,
+                options,
+                eventPublisher: provider.GetRequiredService<IDataImportExportEventPublisher>()));
 
         return services;
     }
@@ -110,6 +125,8 @@ public static class ServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
+        services.TryAddSingleton<IDataImportExportEventPublisher, NullDataImportExportEventPublisher>();
+
         var excelImporterOptions = new ExcelImporterOptions();
         configureExcelImporter?.Invoke(excelImporterOptions);
         services.AddSingleton(excelImporterOptions);
@@ -162,7 +179,11 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IDataExporter, JsonExporter>();
         services.AddSingleton<IDataExporter, NdjsonExporter>();
         services.AddSingleton<IDataExporter, XmlExporter>();
-        services.AddSingleton<IDataFormatRouter, DataFormatRouter>();
+        services.AddSingleton<IDataFormatRouter>(provider =>
+            new DataFormatRouter(
+                provider.GetServices<IDataImporter>(),
+                provider.GetServices<IDataExporter>(),
+                provider.GetRequiredService<IDataImportExportEventPublisher>()));
 
         return services;
     }

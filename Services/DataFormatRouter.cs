@@ -1,5 +1,6 @@
 namespace DataImportExportManager.Services;
 
+using DataImportExportManager.Contracts;
 using DataImportExportManager.Diagnostics;
 using DataImportExportManager.Interfaces;
 
@@ -10,19 +11,25 @@ public sealed class DataFormatRouter : IDataFormatRouter
 {
     private readonly Dictionary<string, IDataImporter> _importers;
     private readonly Dictionary<string, IDataExporter> _exporters;
+    private readonly IDataImportExportEventPublisher _eventPublisher;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DataFormatRouter"/> class.
     /// </summary>
     /// <param name="importers">Registered importers.</param>
     /// <param name="exporters">Registered exporters.</param>
-    public DataFormatRouter(IEnumerable<IDataImporter> importers, IEnumerable<IDataExporter> exporters)
+    /// <param name="eventPublisher">Optional event publisher for lifecycle notifications.</param>
+    public DataFormatRouter(
+        IEnumerable<IDataImporter> importers,
+        IEnumerable<IDataExporter> exporters,
+        IDataImportExportEventPublisher? eventPublisher = null)
     {
         ArgumentNullException.ThrowIfNull(importers);
         ArgumentNullException.ThrowIfNull(exporters);
 
         _importers = BuildImporterMap(importers);
         _exporters = BuildExporterMap(exporters);
+        _eventPublisher = eventPublisher ?? new NullDataImportExportEventPublisher();
     }
 
     /// <inheritdoc />
@@ -75,56 +82,132 @@ public sealed class DataFormatRouter : IDataFormatRouter
         return ExecuteExportAsync(exporter, normalized, data, destination, cancellationToken);
     }
 
-    private static async ValueTask<IReadOnlyList<IReadOnlyList<string>>> ExecuteImportAsync(
+    private async ValueTask<IReadOnlyList<IReadOnlyList<string>>> ExecuteImportAsync(
         IDataImporter importer,
         string normalizedExtension,
         Stream source,
         CancellationToken cancellationToken)
     {
+        await PublishAsync(
+            DataImportExportEventNames.ImportStarted,
+            normalizedExtension,
+            "Import operation started.",
+            cancellationToken).ConfigureAwait(false);
+
         try
         {
-            return await importer.ImportAsync(source, cancellationToken).ConfigureAwait(false);
+            var rows = await importer.ImportAsync(source, cancellationToken).ConfigureAwait(false);
+            await PublishAsync(
+                DataImportExportEventNames.ImportCompleted,
+                normalizedExtension,
+                $"Import operation completed with {rows.Count} rows.",
+                cancellationToken).ConfigureAwait(false);
+            return rows;
         }
-        catch (InvalidOperationException ex) when (!HasDiagnosticPrefix(ex.Message))
+        catch (InvalidOperationException ex)
         {
-            throw new InvalidOperationException(
-                ContractDiagnostics.BuildImportMessage(normalizedExtension, ContractDiagnostics.Codes.Contract, ex.Message),
-                ex);
+            var toThrow = HasDiagnosticPrefix(ex.Message)
+                ? ex
+                : new InvalidOperationException(
+                    ContractDiagnostics.BuildImportMessage(normalizedExtension, ContractDiagnostics.Codes.Contract, ex.Message),
+                    ex);
+
+            await PublishAsync(
+                DataImportExportEventNames.ImportFailed,
+                normalizedExtension,
+                toThrow.Message,
+                cancellationToken).ConfigureAwait(false);
+
+            throw toThrow;
         }
-        catch (ArgumentException ex) when (!HasDiagnosticPrefix(ex.Message))
+        catch (ArgumentException ex)
         {
-            throw new ArgumentException(
-                ContractDiagnostics.BuildConfigMessage(normalizedExtension, ContractDiagnostics.Codes.Contract, ex.Message),
-                ex.ParamName,
-                ex);
+            var toThrow = HasDiagnosticPrefix(ex.Message)
+                ? ex
+                : new ArgumentException(
+                    ContractDiagnostics.BuildConfigMessage(normalizedExtension, ContractDiagnostics.Codes.Contract, ex.Message),
+                    ex.ParamName,
+                    ex);
+
+            await PublishAsync(
+                DataImportExportEventNames.ImportFailed,
+                normalizedExtension,
+                toThrow.Message,
+                cancellationToken).ConfigureAwait(false);
+
+            throw toThrow;
         }
     }
 
-    private static async ValueTask ExecuteExportAsync(
+    private async ValueTask ExecuteExportAsync(
         IDataExporter exporter,
         string normalizedExtension,
         IReadOnlyList<IReadOnlyList<string>> data,
         Stream destination,
         CancellationToken cancellationToken)
     {
+        await PublishAsync(
+            DataImportExportEventNames.ExportStarted,
+            normalizedExtension,
+            "Export operation started.",
+            cancellationToken).ConfigureAwait(false);
+
         try
         {
             await exporter.ExportAsync(data, destination, cancellationToken).ConfigureAwait(false);
+            await PublishAsync(
+                DataImportExportEventNames.ExportCompleted,
+                normalizedExtension,
+                $"Export operation completed with {data.Count} rows.",
+                cancellationToken).ConfigureAwait(false);
         }
-        catch (InvalidOperationException ex) when (!HasDiagnosticPrefix(ex.Message))
+        catch (InvalidOperationException ex)
         {
-            throw new InvalidOperationException(
-                ContractDiagnostics.BuildExportMessage(normalizedExtension, ContractDiagnostics.Codes.Contract, ex.Message),
-                ex);
+            var toThrow = HasDiagnosticPrefix(ex.Message)
+                ? ex
+                : new InvalidOperationException(
+                    ContractDiagnostics.BuildExportMessage(normalizedExtension, ContractDiagnostics.Codes.Contract, ex.Message),
+                    ex);
+
+            await PublishAsync(
+                DataImportExportEventNames.ExportFailed,
+                normalizedExtension,
+                toThrow.Message,
+                cancellationToken).ConfigureAwait(false);
+
+            throw toThrow;
         }
-        catch (ArgumentException ex) when (!HasDiagnosticPrefix(ex.Message))
+        catch (ArgumentException ex)
         {
-            throw new ArgumentException(
-                ContractDiagnostics.BuildConfigMessage(normalizedExtension, ContractDiagnostics.Codes.Contract, ex.Message),
-                ex.ParamName,
-                ex);
+            var toThrow = HasDiagnosticPrefix(ex.Message)
+                ? ex
+                : new ArgumentException(
+                    ContractDiagnostics.BuildConfigMessage(normalizedExtension, ContractDiagnostics.Codes.Contract, ex.Message),
+                    ex.ParamName,
+                    ex);
+
+            await PublishAsync(
+                DataImportExportEventNames.ExportFailed,
+                normalizedExtension,
+                toThrow.Message,
+                cancellationToken).ConfigureAwait(false);
+
+            throw toThrow;
         }
     }
+
+    private ValueTask PublishAsync(
+        string eventName,
+        string extension,
+        string message,
+        CancellationToken cancellationToken)
+        => _eventPublisher.PublishAsync(
+            new DataImportExportEvent(
+                EventName: eventName,
+                OccurredAtUtc: DateTimeOffset.UtcNow,
+                Extension: extension,
+                Message: message),
+            cancellationToken);
 
     private static Dictionary<string, IDataImporter> BuildImporterMap(IEnumerable<IDataImporter> importers)
     {
