@@ -2,9 +2,9 @@
 
 ## Repository
 - Name: `DataImportExportManager`
-- Last updated: `2026-04-21`
+- Last updated: `2026-04-23`
 - Branch: `master`
-- Latest commit: `51dc510`
+- Latest commit: `db7ff42`
 - Working tree at checkpoint: clean
 
 ## Summary
@@ -20,13 +20,18 @@ Implemented and verified in this repo:
 - README diagnostics code/operation tables with sync tests
 
 Latest validation state:
-- Tests: `222/222` passing
+- Tests: `229/229` passing
 - Build: successful
 
 Latest session checkpoint outcomes:
 - Schema mismatch decision support implemented (`ValidateSchema`, `SchemaValidationResult`, `SchemaMismatchAction`) with deterministic remap-required signaling.
 - Tenant/subject-scoped temporary import session caching implemented (`IImportSchemaSessionCache`, `InMemoryImportSchemaSessionCache`) to support continue-with-remap without file reupload.
 - Distributed cache session support implemented (`DistributedImportSchemaSessionCache`, `AddDistributedImportSchemaSessionCache`) for multi-instance hosting.
+- Distributed session cache hardening implemented with configurable key-prefix isolation and max serialized payload guard rails (`DistributedImportSchemaSessionCacheOptions`) plus deterministic serialization/payload-limit failures.
+- Session-cache performance visibility implemented with baseline threshold constants and benchmark-style store/get/consume coverage tests for in-memory and distributed cache flows.
+- Event-driven notification hooks implemented for router and session-cache lifecycle events via `IDataImportExportEventPublisher` with default no-op publisher and API override support.
+- DI-safe schema-validation notification path implemented via `ValidateSchemaAsync(..., IDataImportExportEventPublisher, ...)` overloads to emit schema-mismatch events through the shared publisher abstraction.
+- Test project and test files are now located inside repository root (`DataImportExportManager.Tests`) to keep clone-local build/test extensibility.
 - Branch governance finalized as PR-only (`dev` -> `master`) with owner-required approval and no second approver requirement.
 
 ## Staleness Audit Checkpoint
@@ -55,8 +60,11 @@ Latest session checkpoint outcomes:
 | Standards and instructions | Complete | `.github/copilot-instructions.md` now contains project-specific guidance and execution rules. | Keep instructions synced with actual workflow changes. |
 | Structure and naming | Complete | Library + test layout aligned (`DataImportExportManager` + `DataImportExportManager.Tests`) with deterministic router and per-format import/export implementations. | Preserve consistency for new format additions. |
 | Configuration and options | Complete | Options classes and DI callbacks added for CSV/JSON/NDJSON/XML/Excel scenarios. | Add option-validation tests for any new options added later. |
+| Session cache lifecycle and hardening | Complete | Distributed session cache now supports configurable key-prefix isolation and max payload guard rails with deterministic behavior; tests cover limits and isolation scenarios. | Add explicit consumer-facing docs snippet for distributed cache option tuning examples. |
+| Event-driven integration hooks | Complete | `IDataImportExportEventPublisher` and lifecycle event contracts are wired through router and session caches with DI override support and no-op default implementation. | Evaluate DI-safe schema-validation event publishing path in a future refinement bundle. |
+| Schema validation notification publishing | Complete | Async schema validation overloads publish deterministic schema-mismatch events through `IDataImportExportEventPublisher`; tests cover mismatch publish vs match no-publish behavior. | Keep event payload fields aligned with API toast/notification contracts. |
 | Security and data integrity | Complete (library scope) | Input guards, stream-size limits, XML/JSON validation, deterministic schema enforcement, and controlled diagnostics surface are in place. | Continue to keep security ownership in consuming apps for auth concerns. |
-| Testing and quality | Complete | Broad xUnit coverage including contract, integration-style DI tests, diagnostics conformance tests, and docs-sync guards; latest run `222/222`. | Maintain coverage parity for each new public API/diagnostic code. |
+| Testing and quality | Complete | Broad xUnit coverage including contract, integration-style DI tests, diagnostics conformance tests, docs-sync guards, and session-cache performance baseline tests; latest run `229/229`. | Maintain coverage parity for each new public API/diagnostic code. |
 | Observability and diagnostics | Complete | Structured diagnostics prefix (`[DIXMGR:...]`), centralized catalog (`ContractDiagnostics`), operation/code documentation, and conformance enforcement tests. | Keep catalog/tables/tests synchronized when adding codes. |
 | Performance and resilience | Complete (current scope) | Async import/export paths, size guards, deterministic parsing/export behavior, and existing performance-conscious implementation patterns retained. | Add targeted benchmarks only if regression signal appears. |
 | CI/CD and delivery | Complete (library scope) | Azure DevOps validation workflow at `.azure-pipelines/workflows/dataimportexportmanager-ci.yml` validates `feature/*`/`dev` flow and PRs; branch policies enforce PR-only promotion to `master` with no direct contributor pushes to `dev` or `master`. | Keep policy and validation script drift checks synchronized with actual workflow. |
@@ -89,10 +97,10 @@ Useful verification commands:
 - `git status --short`
 
 ## Next Planned Bundle Candidate
-Session-cache hardening and lifecycle controls:
-1. Add distributed-cache payload-size and serialization guard rails (max payload policy + deterministic failure behavior).
-2. Add optional cache key-prefix configuration for environment isolation in shared Redis deployments.
-3. Add targeted benchmarks for session cache store/get/consume operations to monitor regression risk.
+Project closeout hardening:
+1. Run full closeout pass (build/test/docs guards) and refresh status-matrix checkpoint metadata.
+2. Prepare merge-ready summary focused on API integration hooks and event publication readiness.
+3. Confirm no additional event contract fields are required for consumer API notification routing.
 
 ## References
 - `docs/standards/repository-modernization-checklist.md`

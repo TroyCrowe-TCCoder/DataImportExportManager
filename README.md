@@ -87,6 +87,22 @@ dotnet build
 dotnet test
 ```
 
+From the repository root, this runs the in-repo test project at `DataImportExportManager.Tests/DataImportExportManager.Tests.csproj`.
+
+### Session Cache Performance Baseline Checks
+
+Run session-cache baseline checks from the test project:
+
+```bash
+dotnet test --filter "FullyQualifiedName~SessionCachePerformanceTests"
+```
+
+Baseline thresholds are defined in `DataImportExportManager.Tests/SessionCacheBenchmarkBaselines.cs` and currently target:
+- In-memory session cache store/get/consume loop (`1000` iterations) <= `5000ms`
+- Distributed session cache store/get/consume loop (`1000` iterations, in-memory distributed-cache test double) <= `8000ms`
+
+When environment performance characteristics change, update threshold constants in that baseline file and keep this README section in sync.
+
 ### Branch Governance Flow
 
 Repository governance follows:
@@ -221,6 +237,15 @@ if (!validation.IsMatch)
 }
 ```
 
+If you want schema mismatch notifications to flow through the same API event publisher (for example, toast triggers), use the async publisher-aware overload:
+
+```csharp
+var validation = await result.ValidateSchemaAsync(
+    ["CustomerId", "CustomerName", "Email"],
+    eventPublisher,
+    cancellationToken: cancellationToken);
+```
+
 For multi-instance deployments, prefer distributed cache backing:
 
 ```csharp
@@ -235,6 +260,26 @@ services.AddStackExchangeRedisCache(options =>
 
 // Register distributed session cache implementation
 services.AddDistributedImportSchemaSessionCache(TimeSpan.FromMinutes(20));
+```
+
+To forward library lifecycle notifications (for example, API -> UI toast pipelines), implement `IDataImportExportEventPublisher` in your API and register it before library registration:
+
+```csharp
+using DataImportExportManager.Contracts;
+using DataImportExportManager.Interfaces;
+
+public sealed class ApiEventPublisher : IDataImportExportEventPublisher
+{
+    public ValueTask PublishAsync(DataImportExportEvent notification, CancellationToken cancellationToken = default)
+    {
+        // Forward notification to your API event bus / SignalR / queue for UI toast handling.
+        return ValueTask.CompletedTask;
+    }
+}
+
+services.AddSingleton<IDataImportExportEventPublisher, ApiEventPublisher>();
+services.AddDataImportExportManager();
+services.AddImportSchemaSessionCache();
 ```
 
 Avoid reuploading on mismatch by caching the imported payload in a short-lived tenant-scoped session:
