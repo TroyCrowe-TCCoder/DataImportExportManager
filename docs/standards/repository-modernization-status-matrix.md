@@ -4,7 +4,7 @@
 - Name: `DataImportExportManager`
 - Last updated: `2026-04-23`
 - Branch: `master`
-- Latest commit: `b8b9a85`
+- Latest commit: `bc6cf70`
 - Working tree at checkpoint: clean
 
 ## Summary
@@ -92,6 +92,10 @@ To continue from this exact checkpoint:
 3. Follow enforced execution cadence: implement -> validate -> commit -> push.
 4. For schema-mismatch UX, consume `SchemaValidationResult.AvailableActions` and `IImportSchemaSessionCache` session IDs to offer "correct file" vs "continue with remap" without reupload.
 
+Current in-flight PR state at this checkpoint:
+- Active PR from `feature/next-bundle-2-from-dev` -> `dev` is present and includes current head `bc6cf70`.
+- Auto-complete is enabled on the active PR (set by `tcrowe@singlesourcemanagement.com`).
+
 Useful verification commands:
 - `dotnet test`
 - `dotnet build`
@@ -102,6 +106,31 @@ Project closeout hardening:
 1. Finalize project completion recommendation and backlog any non-blocking follow-up items.
 2. Monitor first consumer integration pass for any missing event payload fields.
 3. Add optional event payload enrichers only if integration evidence requires additional context.
+
+## Planning Continuity Ledger
+Completed planning bundles (preserve for next-session continuity):
+1. Session-cache hardening and lifecycle controls
+   - distributed payload-size guard rails
+   - key-prefix isolation
+   - deterministic failure behavior
+2. Session-cache performance visibility
+   - baseline thresholds
+   - benchmark-style tests
+   - maintainer execution guidance
+3. Event-driven integration hooks
+   - lifecycle event contracts and publisher abstraction
+   - router/session emission paths
+   - DI wiring and API override support
+4. DI-safe schema validation notifications
+   - async publisher-aware schema validation overloads
+   - mismatch-event emission tests
+5. Project closeout hardening
+   - event contract sufficiency audit
+   - explicit completion recommendation + non-blocking backlog
+
+Planned-but-not-started items to retain in backlog:
+- Monitor first consumer API integration pass for any missing event payload context.
+- Introduce optional event payload enrichers only if integration evidence demonstrates need.
 
 ## Project Completion Recommendation
 - Recommendation: Ready to close as complete for current library scope.
