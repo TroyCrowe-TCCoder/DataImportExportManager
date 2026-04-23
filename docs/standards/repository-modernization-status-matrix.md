@@ -29,6 +29,8 @@ Latest session checkpoint outcomes:
 - Distributed cache session support implemented (`DistributedImportSchemaSessionCache`, `AddDistributedImportSchemaSessionCache`) for multi-instance hosting.
 - Distributed session cache hardening implemented with configurable key-prefix isolation and max serialized payload guard rails (`DistributedImportSchemaSessionCacheOptions`) plus deterministic serialization/payload-limit failures.
 - Session-cache performance visibility implemented with baseline threshold constants and benchmark-style store/get/consume coverage tests for in-memory and distributed cache flows.
+- Event-driven notification hooks implemented for router and session-cache lifecycle events via `IDataImportExportEventPublisher` with default no-op publisher and API override support.
+- Test project and test files are now located inside repository root (`DataImportExportManager.Tests`) to keep clone-local build/test extensibility.
 - Branch governance finalized as PR-only (`dev` -> `master`) with owner-required approval and no second approver requirement.
 
 ## Staleness Audit Checkpoint
@@ -58,6 +60,7 @@ Latest session checkpoint outcomes:
 | Structure and naming | Complete | Library + test layout aligned (`DataImportExportManager` + `DataImportExportManager.Tests`) with deterministic router and per-format import/export implementations. | Preserve consistency for new format additions. |
 | Configuration and options | Complete | Options classes and DI callbacks added for CSV/JSON/NDJSON/XML/Excel scenarios. | Add option-validation tests for any new options added later. |
 | Session cache lifecycle and hardening | Complete | Distributed session cache now supports configurable key-prefix isolation and max payload guard rails with deterministic behavior; tests cover limits and isolation scenarios. | Add explicit consumer-facing docs snippet for distributed cache option tuning examples. |
+| Event-driven integration hooks | Complete | `IDataImportExportEventPublisher` and lifecycle event contracts are wired through router and session caches with DI override support and no-op default implementation. | Evaluate DI-safe schema-validation event publishing path in a future refinement bundle. |
 | Security and data integrity | Complete (library scope) | Input guards, stream-size limits, XML/JSON validation, deterministic schema enforcement, and controlled diagnostics surface are in place. | Continue to keep security ownership in consuming apps for auth concerns. |
 | Testing and quality | Complete | Broad xUnit coverage including contract, integration-style DI tests, diagnostics conformance tests, docs-sync guards, and session-cache performance baseline tests; latest run `229/229`. | Maintain coverage parity for each new public API/diagnostic code. |
 | Observability and diagnostics | Complete | Structured diagnostics prefix (`[DIXMGR:...]`), centralized catalog (`ContractDiagnostics`), operation/code documentation, and conformance enforcement tests. | Keep catalog/tables/tests synchronized when adding codes. |
@@ -92,10 +95,10 @@ Useful verification commands:
 - `git status --short`
 
 ## Next Planned Bundle Candidate
-Session-cache benchmark evolution:
-1. Evaluate whether to split performance baselines into fast CI-safe checks and optional extended local benchmark profiles.
-2. Consider introducing BenchmarkDotNet harness in a dedicated benchmark project if deeper perf trend analysis is needed.
-3. Add historical baseline capture guidance for maintainer-run regression tracking.
+Project closeout hardening:
+1. Add a DI-safe schema-validation notification path (extension-compatible) so schema mismatch can emit through the same publisher abstraction.
+2. Run full closeout pass (build/test/docs guards) and refresh status-matrix checkpoint metadata.
+3. Prepare merge-ready summary focused on API integration hooks and event publication readiness.
 
 ## References
 - `docs/standards/repository-modernization-checklist.md`

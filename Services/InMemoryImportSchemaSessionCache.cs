@@ -12,13 +12,18 @@ public sealed class InMemoryImportSchemaSessionCache : IImportSchemaSessionCache
     private readonly ConcurrentDictionary<string, CacheEntry> _sessions = new(StringComparer.Ordinal);
     private readonly TimeProvider _timeProvider;
     private readonly TimeSpan _defaultTtl;
+    private readonly IDataImportExportEventPublisher _eventPublisher;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="InMemoryImportSchemaSessionCache"/> class.
     /// </summary>
     /// <param name="defaultTtl">Default session TTL when not provided per call.</param>
     /// <param name="timeProvider">Optional time provider for deterministic testing.</param>
-    public InMemoryImportSchemaSessionCache(TimeSpan? defaultTtl = null, TimeProvider? timeProvider = null)
+    /// <param name="eventPublisher">Optional event publisher for lifecycle notifications.</param>
+    public InMemoryImportSchemaSessionCache(
+        TimeSpan? defaultTtl = null,
+        TimeProvider? timeProvider = null,
+        IDataImportExportEventPublisher? eventPublisher = null)
     {
         var effectiveDefaultTtl = defaultTtl ?? TimeSpan.FromMinutes(20);
         if (effectiveDefaultTtl <= TimeSpan.Zero)
@@ -28,10 +33,11 @@ public sealed class InMemoryImportSchemaSessionCache : IImportSchemaSessionCache
 
         _defaultTtl = effectiveDefaultTtl;
         _timeProvider = timeProvider ?? TimeProvider.System;
+        _eventPublisher = eventPublisher ?? new NullDataImportExportEventPublisher();
     }
 
     /// <inheritdoc/>
-    public ValueTask<string> StoreAsync(
+    public async ValueTask<string> StoreAsync(
         string tenantId,
         string subjectId,
         TabularImportResult importResult,
@@ -54,11 +60,21 @@ public sealed class InMemoryImportSchemaSessionCache : IImportSchemaSessionCache
         var key = BuildKey(tenantId, subjectId, sessionId);
         _sessions[key] = new CacheEntry(importResult, expiresAtUtc);
 
-        return ValueTask.FromResult(sessionId);
+        await _eventPublisher.PublishAsync(
+            new DataImportExportEvent(
+                EventName: DataImportExportEventNames.SessionStored,
+                OccurredAtUtc: now,
+                TenantId: tenantId.Trim(),
+                SubjectId: subjectId.Trim(),
+                SessionId: sessionId,
+                Message: "Schema session stored."),
+            cancellationToken).ConfigureAwait(false);
+
+        return sessionId;
     }
 
     /// <inheritdoc/>
-    public ValueTask<ImportSchemaSession?> TryGetAsync(
+    public async ValueTask<ImportSchemaSession?> TryGetAsync(
         string tenantId,
         string subjectId,
         string sessionId,
@@ -71,21 +87,32 @@ public sealed class InMemoryImportSchemaSessionCache : IImportSchemaSessionCache
         var key = BuildKey(tenantId, subjectId, sessionId);
         if (!_sessions.TryGetValue(key, out var entry))
         {
-            return ValueTask.FromResult<ImportSchemaSession?>(null);
+            return null;
         }
 
         var now = _timeProvider.GetUtcNow();
         if (entry.ExpiresAtUtc <= now)
         {
             _sessions.TryRemove(key, out _);
-            return ValueTask.FromResult<ImportSchemaSession?>(null);
+
+            await _eventPublisher.PublishAsync(
+                new DataImportExportEvent(
+                    EventName: DataImportExportEventNames.SessionRemoved,
+                    OccurredAtUtc: now,
+                    TenantId: tenantId.Trim(),
+                    SubjectId: subjectId.Trim(),
+                    SessionId: sessionId.Trim(),
+                    Message: "Schema session expired and was removed."),
+                cancellationToken).ConfigureAwait(false);
+
+            return null;
         }
 
-        return ValueTask.FromResult<ImportSchemaSession?>(CreateSession(tenantId, subjectId, sessionId, entry));
+        return CreateSession(tenantId, subjectId, sessionId, entry);
     }
 
     /// <inheritdoc/>
-    public ValueTask<ImportSchemaSession?> ConsumeAsync(
+    public async ValueTask<ImportSchemaSession?> ConsumeAsync(
         string tenantId,
         string subjectId,
         string sessionId,
@@ -98,20 +125,40 @@ public sealed class InMemoryImportSchemaSessionCache : IImportSchemaSessionCache
         var key = BuildKey(tenantId, subjectId, sessionId);
         if (!_sessions.TryRemove(key, out var entry))
         {
-            return ValueTask.FromResult<ImportSchemaSession?>(null);
+            return null;
         }
 
         var now = _timeProvider.GetUtcNow();
         if (entry.ExpiresAtUtc <= now)
         {
-            return ValueTask.FromResult<ImportSchemaSession?>(null);
+            await _eventPublisher.PublishAsync(
+                new DataImportExportEvent(
+                    EventName: DataImportExportEventNames.SessionRemoved,
+                    OccurredAtUtc: now,
+                    TenantId: tenantId.Trim(),
+                    SubjectId: subjectId.Trim(),
+                    SessionId: sessionId.Trim(),
+                    Message: "Schema session expired before consume."),
+                cancellationToken).ConfigureAwait(false);
+
+            return null;
         }
 
-        return ValueTask.FromResult<ImportSchemaSession?>(CreateSession(tenantId, subjectId, sessionId, entry));
+        await _eventPublisher.PublishAsync(
+            new DataImportExportEvent(
+                EventName: DataImportExportEventNames.SessionConsumed,
+                OccurredAtUtc: now,
+                TenantId: tenantId.Trim(),
+                SubjectId: subjectId.Trim(),
+                SessionId: sessionId.Trim(),
+                Message: "Schema session consumed."),
+            cancellationToken).ConfigureAwait(false);
+
+        return CreateSession(tenantId, subjectId, sessionId, entry);
     }
 
     /// <inheritdoc/>
-    public ValueTask<bool> RemoveAsync(
+    public async ValueTask<bool> RemoveAsync(
         string tenantId,
         string subjectId,
         string sessionId,
@@ -123,7 +170,21 @@ public sealed class InMemoryImportSchemaSessionCache : IImportSchemaSessionCache
 
         var key = BuildKey(tenantId, subjectId, sessionId);
         var removed = _sessions.TryRemove(key, out _);
-        return ValueTask.FromResult(removed);
+
+        if (removed)
+        {
+            await _eventPublisher.PublishAsync(
+                new DataImportExportEvent(
+                    EventName: DataImportExportEventNames.SessionRemoved,
+                    OccurredAtUtc: _timeProvider.GetUtcNow(),
+                    TenantId: tenantId.Trim(),
+                    SubjectId: subjectId.Trim(),
+                    SessionId: sessionId.Trim(),
+                    Message: "Schema session removed."),
+                cancellationToken).ConfigureAwait(false);
+        }
+
+        return removed;
     }
 
     private static void ValidateScopeInputs(string tenantId, string subjectId)

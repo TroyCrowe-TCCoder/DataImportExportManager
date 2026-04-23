@@ -20,6 +20,7 @@ public sealed class DistributedImportSchemaSessionCache : IImportSchemaSessionCa
     private readonly TimeSpan _defaultTtl;
     private readonly string _keyPrefix;
     private readonly int _maxPayloadBytes;
+    private readonly IDataImportExportEventPublisher _eventPublisher;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="DistributedImportSchemaSessionCache"/> class.
@@ -28,11 +29,13 @@ public sealed class DistributedImportSchemaSessionCache : IImportSchemaSessionCa
     /// <param name="defaultTtl">Default session TTL when not provided per call.</param>
     /// <param name="options">Optional cache options for key prefix and payload-size limits.</param>
     /// <param name="timeProvider">Optional time provider for deterministic testing.</param>
+    /// <param name="eventPublisher">Optional event publisher for lifecycle notifications.</param>
     public DistributedImportSchemaSessionCache(
         IDistributedCache cache,
         TimeSpan? defaultTtl = null,
         DistributedImportSchemaSessionCacheOptions? options = null,
-        TimeProvider? timeProvider = null)
+        TimeProvider? timeProvider = null,
+        IDataImportExportEventPublisher? eventPublisher = null)
     {
         ArgumentNullException.ThrowIfNull(cache);
 
@@ -59,6 +62,7 @@ public sealed class DistributedImportSchemaSessionCache : IImportSchemaSessionCa
 
         _keyPrefix = effectiveOptions.KeyPrefix.Trim();
         _maxPayloadBytes = effectiveOptions.MaxPayloadBytes;
+        _eventPublisher = eventPublisher ?? new NullDataImportExportEventPublisher();
     }
 
     /// <inheritdoc/>
@@ -106,6 +110,16 @@ public sealed class DistributedImportSchemaSessionCache : IImportSchemaSessionCa
             new DistributedCacheEntryOptions { AbsoluteExpiration = expiresAtUtc },
             cancellationToken).ConfigureAwait(false);
 
+        await _eventPublisher.PublishAsync(
+            new DataImportExportEvent(
+                EventName: DataImportExportEventNames.SessionStored,
+                OccurredAtUtc: now,
+                TenantId: tenantId.Trim(),
+                SubjectId: subjectId.Trim(),
+                SessionId: sessionId,
+                Message: "Schema session stored."),
+            cancellationToken).ConfigureAwait(false);
+
         return sessionId;
     }
 
@@ -132,6 +146,16 @@ public sealed class DistributedImportSchemaSessionCache : IImportSchemaSessionCa
         if (entry.ExpiresAtUtc <= now)
         {
             await _cache.RemoveAsync(key, cancellationToken).ConfigureAwait(false);
+            await _eventPublisher.PublishAsync(
+                new DataImportExportEvent(
+                    EventName: DataImportExportEventNames.SessionRemoved,
+                    OccurredAtUtc: now,
+                    TenantId: tenantId.Trim(),
+                    SubjectId: subjectId.Trim(),
+                    SessionId: sessionId.Trim(),
+                    Message: "Schema session expired and was removed."),
+                cancellationToken).ConfigureAwait(false);
+
             return null;
         }
 
@@ -162,8 +186,28 @@ public sealed class DistributedImportSchemaSessionCache : IImportSchemaSessionCa
         var now = _timeProvider.GetUtcNow();
         if (entry.ExpiresAtUtc <= now)
         {
+            await _eventPublisher.PublishAsync(
+                new DataImportExportEvent(
+                    EventName: DataImportExportEventNames.SessionRemoved,
+                    OccurredAtUtc: now,
+                    TenantId: tenantId.Trim(),
+                    SubjectId: subjectId.Trim(),
+                    SessionId: sessionId.Trim(),
+                    Message: "Schema session expired before consume."),
+                cancellationToken).ConfigureAwait(false);
+
             return null;
         }
+
+        await _eventPublisher.PublishAsync(
+            new DataImportExportEvent(
+                EventName: DataImportExportEventNames.SessionConsumed,
+                OccurredAtUtc: now,
+                TenantId: tenantId.Trim(),
+                SubjectId: subjectId.Trim(),
+                SessionId: sessionId.Trim(),
+                Message: "Schema session consumed."),
+            cancellationToken).ConfigureAwait(false);
 
         return CreateSession(tenantId, subjectId, sessionId, entry);
     }
@@ -187,6 +231,17 @@ public sealed class DistributedImportSchemaSessionCache : IImportSchemaSessionCa
         }
 
         await _cache.RemoveAsync(key, cancellationToken).ConfigureAwait(false);
+
+        await _eventPublisher.PublishAsync(
+            new DataImportExportEvent(
+                EventName: DataImportExportEventNames.SessionRemoved,
+                OccurredAtUtc: _timeProvider.GetUtcNow(),
+                TenantId: tenantId.Trim(),
+                SubjectId: subjectId.Trim(),
+                SessionId: sessionId.Trim(),
+                Message: "Schema session removed."),
+            cancellationToken).ConfigureAwait(false);
+
         return true;
     }
 

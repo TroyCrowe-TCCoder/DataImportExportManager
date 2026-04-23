@@ -87,6 +87,8 @@ dotnet build
 dotnet test
 ```
 
+From the repository root, this runs the in-repo test project at `DataImportExportManager.Tests/DataImportExportManager.Tests.csproj`.
+
 ### Session Cache Performance Baseline Checks
 
 Run session-cache baseline checks from the test project:
@@ -249,6 +251,26 @@ services.AddStackExchangeRedisCache(options =>
 
 // Register distributed session cache implementation
 services.AddDistributedImportSchemaSessionCache(TimeSpan.FromMinutes(20));
+```
+
+To forward library lifecycle notifications (for example, API -> UI toast pipelines), implement `IDataImportExportEventPublisher` in your API and register it before library registration:
+
+```csharp
+using DataImportExportManager.Contracts;
+using DataImportExportManager.Interfaces;
+
+public sealed class ApiEventPublisher : IDataImportExportEventPublisher
+{
+    public ValueTask PublishAsync(DataImportExportEvent notification, CancellationToken cancellationToken = default)
+    {
+        // Forward notification to your API event bus / SignalR / queue for UI toast handling.
+        return ValueTask.CompletedTask;
+    }
+}
+
+services.AddSingleton<IDataImportExportEventPublisher, ApiEventPublisher>();
+services.AddDataImportExportManager();
+services.AddImportSchemaSessionCache();
 ```
 
 Avoid reuploading on mismatch by caching the imported payload in a short-lived tenant-scoped session:
