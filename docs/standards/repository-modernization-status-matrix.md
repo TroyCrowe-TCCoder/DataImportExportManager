@@ -93,7 +93,7 @@ To continue from this exact checkpoint:
 4. For schema-mismatch UX, consume `SchemaValidationResult.AvailableActions` and `IImportSchemaSessionCache` session IDs to offer "correct file" vs "continue with remap" without reupload.
 
 Current in-flight PR state at this checkpoint:
-- No active PR from `feature/next-bundle-2-from-dev` -> `dev` at this checkpoint (latest bundle merged).
+- No active PR from `feature/next-bundle-2-from-dev` -> `dev` at this checkpoint (latest bundle merged to `dev` commit `1f93795`).
 
 Useful verification commands:
 - `dotnet test`
@@ -130,6 +130,15 @@ Completed planning bundles (preserve for next-session continuity):
 Planned-but-not-started items to retain in backlog:
 - Complete first consumer API integration evidence capture (pending fields in 2026-04-24 observation record).
 - Introduce optional event payload enrichers only if integration evidence demonstrates need.
+
+## Next Session Execution Targets
+- Owner: API integration workstream lead (assign at session start)
+- Primary artifact to update: `docs/standards/consumer-integration-observation-record-2026-04-24.md`
+- Timebox: 1 focused session (capture evidence + enrichment decision)
+- Definition of done:
+  1. All pending evidence fields in the dated observation record are resolved.
+  2. Enrichment decision is explicit ("no enrichment" or minimal field set with rationale).
+  3. If enrichment is required, create implementation task list with tests/docs scope.
 
 ## Project Completion Recommendation
 - Recommendation: Ready to close as complete for current library scope.
