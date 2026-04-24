@@ -4,7 +4,7 @@
 - Name: `DataImportExportManager`
 - Last updated: `2026-04-23`
 - Branch: `master`
-- Latest commit: `0b3554e`
+- Latest commit: `82f4f43`
 - Working tree at checkpoint: clean
 
 ## Summary
@@ -102,7 +102,7 @@ Useful verification commands:
 
 ## Next Planned Bundle Candidate
 Project closeout hardening:
-1. Execute first consumer API integration observation checklist and capture findings using `docs/standards/consumer-integration-observation-record-template.md`.
+1. Complete pending evidence fields in `docs/standards/consumer-integration-observation-record-2026-04-24.md` during first API rollout.
 2. Confirm whether event payload enrichment is unnecessary or define a minimal enrichment delta.
 3. If enrichment is required, implement only consumer-validated fields and extend tests/docs accordingly.
 
@@ -128,7 +128,7 @@ Completed planning bundles (preserve for next-session continuity):
    - explicit completion recommendation + non-blocking backlog
 
 Planned-but-not-started items to retain in backlog:
-- Monitor first consumer API integration pass for any missing event payload context.
+- Complete first consumer API integration evidence capture (pending fields in 2026-04-24 observation record).
 - Introduce optional event payload enrichers only if integration evidence demonstrates need.
 
 ## Project Completion Recommendation
@@ -148,9 +148,13 @@ Use this checklist during the first API integration pass to decide whether addit
 
 Add payload enrichers only if checklist item 5 fails in real consumer integration evidence.
 
+## Consumer Integration Evidence Records
+- `docs/standards/consumer-integration-observation-record-2026-04-24.md` (kickoff baseline; pending API rollout evidence fields remain)
+
 ## References
 - `docs/standards/repository-modernization-checklist.md`
 - `docs/standards/existing-repositories-rollout-execution-plan.md`
 - `docs/standards/targeted-repositories-modernization-backlog.md`
 - `docs/standards/azure-devops-branch-policy-checklist.md`
 - `docs/standards/consumer-integration-observation-record-template.md`
+- `docs/standards/consumer-integration-observation-record-2026-04-24.md`
