@@ -93,7 +93,7 @@ To continue from this exact checkpoint:
 4. For schema-mismatch UX, consume `SchemaValidationResult.AvailableActions` and `IImportSchemaSessionCache` session IDs to offer "correct file" vs "continue with remap" without reupload.
 
 Current in-flight PR state at this checkpoint:
-- No active PR from `feature/next-bundle-2-from-dev` -> `dev` at this checkpoint (latest bundle merged to `dev` commit `1f4201f`, source commit `59d08bf`).
+- No active PR from `feature/next-bundle-2-from-dev` -> `dev` at this checkpoint (latest bundle merged to `dev` commit `25eb3bf`, source commit `a027c38`).
 
 Useful verification commands:
 - `dotnet test`
