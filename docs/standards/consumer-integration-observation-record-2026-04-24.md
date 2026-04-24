@@ -4,7 +4,7 @@
 - Date: 2026-04-24
 - Environment (dev/test/prod-like): dev
 - API application name: Pending first API rollout execution
-- Feature branch / commit: feature/next-bundle-2-from-dev / 720c047
+- Feature branch / commit: feature/next-bundle-2-from-dev / 3cb1a3e
 - Observer: Library validation checkpoint (integration observer to be assigned for API rollout)
 
 ## Event Mapping Verification
@@ -38,9 +38,14 @@
   - Not applicable unless rollout evidence identifies a concrete routing gap.
 
 ## Follow-up Actions
-- Action 1: Execute first API integration pass and confirm evidence in a rollout addendum section.
-- Action 2: Confirm API localization strategy (direct message vs lookup-key translation) using current `Message` payload.
-- Action 3: If any missing field is identified during rollout, define minimal enrichment delta and add tests/docs before implementation.
+- Action 1: Execute first API integration pass and complete rollout addendum fields below (external consumer evidence).
+- Action 2: Confirm API localization strategy (direct message vs lookup-key translation) using current `Message` payload during rollout.
+- Action 3: If any missing field is identified during rollout, define minimal enrichment delta and open implementation follow-up with tests/docs scope.
+
+## Documentation Closeout Status (Repository Scope)
+- In-repository documentation coverage for integration boundaries and configurability is complete.
+- Remaining unresolved items are external rollout evidence fields captured in the rollout addendum.
+- No additional in-repo library behavior change is required unless rollout evidence identifies a concrete missing field.
 
 ## Rollout Addendum (To Be Completed During First API Integration)
 - API application name:
