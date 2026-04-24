@@ -4,7 +4,7 @@
 - Name: `DataImportExportManager`
 - Last updated: `2026-04-24`
 - Branch: `master`
-- Latest commit: `720c047`
+- Latest commit: `3cb1a3e`
 - Working tree at checkpoint: clean
 
 ## Summary
@@ -96,7 +96,7 @@ To continue from this exact checkpoint:
 4. For schema-mismatch UX, consume `SchemaValidationResult.AvailableActions` and `IImportSchemaSessionCache` session IDs to offer "correct file" vs "continue with remap" without reupload.
 
 Current in-flight PR state at this checkpoint:
-- No active PR from `feature/next-bundle-2-from-dev` -> `dev` at this checkpoint (latest bundle merged to `dev` commit `4c492a4`, source commit `720c047`).
+- Active PR from `feature/next-bundle-2-from-dev` -> `dev` at this checkpoint is PR `123` with source commit `3cb1a3e` targeting `dev` commit `4c492a4`.
 
 Useful verification commands:
 - `dotnet test`
@@ -104,10 +104,10 @@ Useful verification commands:
 - `git status --short`
 
 ## Next Planned Bundle Candidate
-Project closeout hardening:
+External rollout evidence capture (outside repository implementation scope):
 1. Complete rollout addendum fields in `docs/standards/consumer-integration-observation-record-2026-04-24.md` during first API rollout.
 2. Confirm whether event payload enrichment is unnecessary or define a minimal enrichment delta.
-3. If enrichment is required, implement only consumer-validated fields and extend tests/docs accordingly.
+3. If enrichment is required, open a targeted implementation follow-up bundle with tests/docs.
 
 ## Planning Continuity Ledger
 Completed planning bundles (preserve for next-session continuity):
@@ -131,7 +131,7 @@ Completed planning bundles (preserve for next-session continuity):
    - explicit completion recommendation + non-blocking backlog
 
 Planned-but-not-started items to retain in backlog:
-- Complete first consumer API integration evidence capture (pending fields in 2026-04-24 observation record).
+- Complete first consumer API integration evidence capture (pending fields in 2026-04-24 observation record; external rollout activity).
 - Introduce optional event payload enrichers only if integration evidence demonstrates need.
 
 ## Next Session Execution Targets
@@ -144,10 +144,10 @@ Planned-but-not-started items to retain in backlog:
   3. If enrichment is required, create implementation task list with tests/docs scope.
 
 ## Project Completion Recommendation
-- Recommendation: Ready to close as complete for current library scope.
+- Recommendation: Complete for current library scope and repository documentation scope.
 - Non-blocking follow-up backlog:
-  - Observe first API integration rollout for any additional toast-routing metadata needs.
-  - Consider optional enrichers (for example correlation IDs) only after concrete consumer requirements are validated.
+- Capture first API integration rollout evidence in the dated observation addendum.
+- Consider optional enrichers (for example correlation IDs) only after concrete consumer requirements are validated.
 
 ## Consumer Integration Observation Checklist (First Rollout)
 Use this checklist during the first API integration pass to decide whether additional event payload fields are needed:
