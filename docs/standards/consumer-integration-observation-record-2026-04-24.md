@@ -4,7 +4,7 @@
 - Date: 2026-04-24
 - Environment (dev/test/prod-like): dev
 - API application name: Pending first API rollout execution
-- Feature branch / commit: feature/next-bundle-2-from-dev / c3afd05
+- Feature branch / commit: feature/next-bundle-2-from-dev / ebe606a
 - Observer: Library validation checkpoint (integration observer to be assigned for API rollout)
 
 ## Event Mapping Verification
