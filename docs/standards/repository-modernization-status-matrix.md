@@ -4,7 +4,7 @@
 - Name: `DataImportExportManager`
 - Last updated: `2026-04-24`
 - Branch: `master`
-- Latest commit: `59d08bf`
+- Latest commit: `c3afd05`
 - Working tree at checkpoint: clean
 
 ## Summary
@@ -93,7 +93,7 @@ To continue from this exact checkpoint:
 4. For schema-mismatch UX, consume `SchemaValidationResult.AvailableActions` and `IImportSchemaSessionCache` session IDs to offer "correct file" vs "continue with remap" without reupload.
 
 Current in-flight PR state at this checkpoint:
-- No active PR from `feature/next-bundle-2-from-dev` -> `dev` at this checkpoint (latest bundle merged to `dev` commit `25eb3bf`, source commit `a027c38`).
+- No active PR from `feature/next-bundle-2-from-dev` -> `dev` at this checkpoint (latest bundle merged to `dev` commit `556ec74`, source commit `c3afd05`).
 
 Useful verification commands:
 - `dotnet test`
