@@ -331,6 +331,26 @@ For customer self-standup scenarios, document these values in your host API conf
 
 The library intentionally does not include direct configuration-provider bindings for external services; consuming applications supply those settings and pass resolved values into registration callbacks.
 
+### Configurable Host Services (Provider-Agnostic)
+
+The library is designed so tenant operators can configure host-selected services without modifying this library.
+
+| Integration category | Library integration surface | Host configuration model | Current example | Future provider swaps |
+|---|---|---|---|---|
+| Logging | `ILogger<T>` (`Microsoft.Extensions.Logging`) | Configure logging providers in host app settings/DI | Application Insights | Serilog, Dynatrace, others supported by host logging pipeline |
+| Distributed cache | `IDistributedCache` + `AddDistributedImportSchemaSessionCache(...)` | Configure distributed cache provider connectivity/credentials in host | Redis via `AddStackExchangeRedisCache` | SQL Server cache, NCache, other `IDistributedCache` providers |
+| Event notifications | `IDataImportExportEventPublisher` | Register host publisher implementation with host service settings/credentials | API event bus adapter | Queue/topic, SignalR, webhook, or other host-selected transport |
+
+#### Customer self-standup expectation
+
+For self-standup, operators should only need to:
+
+1. Select supported host providers for logging, cache, and event transport.
+2. Supply provider configuration and credentials in the host application.
+3. Register the host services in DI before library registration.
+
+No library fork or core-library source modification should be required to change provider implementations.
+
 Avoid reuploading on mismatch by caching the imported payload in a short-lived tenant-scoped session:
 
 ```csharp
