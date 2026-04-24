@@ -104,10 +104,11 @@ Useful verification commands:
 - `git status --short`
 
 ## Next Planned Bundle Candidate
-External rollout evidence capture (outside repository implementation scope):
-1. Complete rollout addendum fields in `docs/standards/consumer-integration-observation-record-2026-04-24.md` during first API rollout.
+External rollout evidence capture (outside repository implementation scope; currently deferred):
+1. Complete rollout addendum fields in `docs/standards/consumer-integration-observation-record-2026-04-24.md` once API restructuring is complete.
 2. Confirm whether event payload enrichment is unnecessary or define a minimal enrichment delta.
-3. If enrichment is required, open a targeted implementation follow-up bundle with tests/docs.
+3. Revalidate that end-to-end import responses include document headers required by consumer workflows.
+4. If enrichment or header contract adjustments are required, open a targeted implementation follow-up bundle with tests/docs.
 
 ## Planning Continuity Ledger
 Completed planning bundles (preserve for next-session continuity):
@@ -131,8 +132,9 @@ Completed planning bundles (preserve for next-session continuity):
    - explicit completion recommendation + non-blocking backlog
 
 Planned-but-not-started items to retain in backlog:
-- Complete first consumer API integration evidence capture (pending fields in 2026-04-24 observation record; external rollout activity).
+- Complete first consumer API integration evidence capture (pending fields in 2026-04-24 observation record; external rollout activity deferred until API restructuring completes).
 - Introduce optional event payload enrichers only if integration evidence demonstrates need.
+- Validate consumer-facing document header return behavior during the first rollout evidence pass.
 
 ## Next Session Execution Targets
 - Owner: API integration workstream lead (assign at session start)

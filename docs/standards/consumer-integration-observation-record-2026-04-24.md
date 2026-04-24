@@ -47,6 +47,13 @@
 - Remaining unresolved items are external rollout evidence fields captured in the rollout addendum.
 - No additional in-repo library behavior change is required unless rollout evidence identifies a concrete missing field.
 
+## External Rollout Validation Status (Deferred / TODO)
+- Status: Deferred until consuming API restructuring is complete.
+- Reason: First real integration environment is not yet stable for rollout validation.
+- TODO: Execute rollout addendum validation after API restructuring is complete.
+- TODO: Confirm end-to-end import response includes document headers expected by consumer workflows.
+- Note: Header-return gap was discovered during API restructuring and must be revalidated in the first rollout evidence pass.
+
 ## Rollout Addendum (To Be Completed During First API Integration)
 - API application name:
 - Observer:
