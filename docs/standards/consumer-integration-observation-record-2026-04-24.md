@@ -9,11 +9,11 @@
 
 ## Event Mapping Verification
 1. `EventName` -> API notification type mapping
-   - Result: Pending integration evidence
-   - Evidence: No consumer API rollout execution captured yet.
+   - Result: Pass (library-scope)
+   - Evidence: Router lifecycle tests assert deterministic event names for import/export started/completed/failed paths.
 2. `Message` suitability for UI display or localization-key translation
-   - Result: Pending integration evidence
-   - Evidence: Consumer UX/localization pipeline not yet exercised in this repo checkpoint.
+   - Result: Pass (library-scope payload presence)
+   - Evidence: Router/session/schema event tests now assert deterministic message payload population on emitted notifications.
 3. Schema mismatch event contains `DecisionCode` + actionable `AvailableActions`
    - Result: Pass (library-scope)
    - Evidence: `ValidateSchemaAsync(..., IDataImportExportEventPublisher, ...)` emits `schema.validation.mismatch` with decision context and actions; verified by test coverage.
@@ -21,17 +21,18 @@
    - Result: Pass (library-scope)
    - Evidence: Session stored/consumed/removed notifications emit `SessionId` in both in-memory and distributed cache flows; verified by tests.
 5. Required routing/filtering context coverage using existing fields (`Extension`, `TenantId`, `SubjectId`, `OccurredAtUtc`)
-   - Result: Pending integration evidence
-   - Evidence: Library emits fields where available; consumer routing requirements must be confirmed in first API rollout.
+   - Result: Pass (library-scope payload presence)
+   - Evidence: Tests now assert `Extension` + `OccurredAtUtc` in router events and `TenantId`/`SubjectId` in session events.
 
 ## Decision Gate
 - Did any API/UI routing decision require a missing field from `DataImportExportEvent`?
-  - Pending integration evidence
+  - No missing field identified at library-scope validation. Consumer rollout confirmation still required.
 - If Yes, list each missing field and consumer scenario:
   - None identified yet (awaiting first consumer rollout data).
 
 ## Enrichment Recommendation
 - Recommendation: Deferred pending first consumer rollout evidence.
+- Recommendation: No enrichment required at current library-scope evidence level; confirm during consumer rollout.
 - If enrichment required, proposed minimal field set:
   - TBD from observed consumer routing gaps.
 - Why each field is required (consumer-evidence based):
@@ -39,5 +40,5 @@
 
 ## Follow-up Actions
 - Action 1: Execute first API integration pass and populate all pending evidence fields.
-- Action 2: Determine whether localization flow requires additional message-key fields beyond `Message`.
-- Action 3: If any missing field is identified, define minimal enrichment delta and add tests/docs before implementation.
+- Action 2: Confirm API localization strategy (direct message vs lookup-key translation) using current `Message` payload.
+- Action 3: If any missing field is identified during rollout, define minimal enrichment delta and add tests/docs before implementation.

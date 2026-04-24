@@ -79,6 +79,10 @@ public class DistributedImportSchemaSessionCacheTests
 
         Assert.Single(publisher.Events);
         Assert.Equal(DataImportExportEventNames.SessionStored, publisher.Events[0].EventName);
+        Assert.Equal("tenant-a", publisher.Events[0].TenantId);
+        Assert.Equal("user-a", publisher.Events[0].SubjectId);
+        Assert.Equal("Schema session stored.", publisher.Events[0].Message);
+        Assert.False(string.IsNullOrWhiteSpace(publisher.Events[0].SessionId));
     }
 
     [Fact]
@@ -119,7 +123,11 @@ public class DistributedImportSchemaSessionCacheTests
 
         _ = await cache.ConsumeAsync("tenant-a", "user-a", sessionId);
 
-        Assert.Contains(publisher.Events, e => e.EventName == DataImportExportEventNames.SessionConsumed);
+        var consumedEvent = Assert.Single(publisher.Events.Where(e => e.EventName == DataImportExportEventNames.SessionConsumed));
+        Assert.Equal("tenant-a", consumedEvent.TenantId);
+        Assert.Equal("user-a", consumedEvent.SubjectId);
+        Assert.Equal(sessionId, consumedEvent.SessionId);
+        Assert.Equal("Schema session consumed.", consumedEvent.Message);
     }
 
     [Fact]
