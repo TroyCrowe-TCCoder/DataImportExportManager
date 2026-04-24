@@ -309,6 +309,28 @@ public sealed record UiToastEvent(
 
 For this library, payload enrichment (for example correlation IDs) should remain optional and be added only when consumer integration evidence requires additional fields.
 
+### SaaS Hosting Configuration Boundary
+
+For SaaS deployments, keep configuration ownership split by responsibility:
+
+- **Hosting API passthrough required (external-service integrations):**
+  - Distributed cache provider connectivity and credentials (for example Redis endpoint/TLS/auth).
+  - Event publishing transport integration (for example queue, bus, SignalR hub, webhook dispatch).
+  - Tenant-aware routing and security context propagation for outward service calls.
+- **Library self-hosted options (internal behavior):**
+  - Import/export format options (`Csv*Options`, `Excel*Options`, `Json*Options`, `Ndjson*Options`, `Xml*Options`).
+  - Session-cache behavior options (`defaultTtl`, distributed cache `KeyPrefix`, `MaxPayloadBytes`).
+  - Deterministic schema validation and remap workflow behavior.
+
+For customer self-standup scenarios, document these values in your host API configuration guide:
+
+1. Which external services are required (or optional) per environment.
+2. Which host-level settings are tenant-specific versus environment-global.
+3. Which library options are safe for tenant-level override.
+4. How event notifications are projected from API to UI toast contracts.
+
+The library intentionally does not include direct configuration-provider bindings for external services; consuming applications supply those settings and pass resolved values into registration callbacks.
+
 Avoid reuploading on mismatch by caching the imported payload in a short-lived tenant-scoped session:
 
 ```csharp

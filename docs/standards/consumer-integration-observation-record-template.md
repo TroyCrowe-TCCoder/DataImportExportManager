@@ -26,6 +26,20 @@ Use this template during the first API integration rollout to capture determinis
    - Result: Pass / Fail
    - Evidence:
 
+## SaaS Configuration Boundary Verification
+1. External-service integrations are configured via hosting API passthrough (not hard-coded in library)
+   - Result: Pass / Fail
+   - Evidence:
+2. Tenant-specific versus environment-global host settings are explicitly documented
+   - Result: Pass / Fail
+   - Evidence:
+3. Library self-hosted options exposed for tenant or deployment tuning are documented for operators
+   - Result: Pass / Fail
+   - Evidence:
+4. Event transport integration path from API to UI notification channel is documented
+   - Result: Pass / Fail
+   - Evidence:
+
 ## Decision Gate
 - Did any API/UI routing decision require a missing field from `DataImportExportEvent`?
   - Yes / No
