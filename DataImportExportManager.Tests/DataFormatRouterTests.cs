@@ -85,8 +85,20 @@ public class DataFormatRouterTests
 
         Assert.Collection(
             publisher.Events,
-            first => Assert.Equal(DataImportExportEventNames.ImportStarted, first.EventName),
-            second => Assert.Equal(DataImportExportEventNames.ImportCompleted, second.EventName));
+            first =>
+            {
+                Assert.Equal(DataImportExportEventNames.ImportStarted, first.EventName);
+                Assert.Equal(".csv", first.Extension);
+                Assert.Equal("Import operation started.", first.Message);
+                Assert.True(first.OccurredAtUtc <= DateTimeOffset.UtcNow);
+            },
+            second =>
+            {
+                Assert.Equal(DataImportExportEventNames.ImportCompleted, second.EventName);
+                Assert.Equal(".csv", second.Extension);
+                Assert.Equal("Import operation completed with 2 rows.", second.Message);
+                Assert.True(second.OccurredAtUtc <= DateTimeOffset.UtcNow);
+            });
     }
 
     [Fact]
@@ -119,8 +131,20 @@ public class DataFormatRouterTests
 
         Assert.Collection(
             publisher.Events,
-            first => Assert.Equal(DataImportExportEventNames.ExportStarted, first.EventName),
-            second => Assert.Equal(DataImportExportEventNames.ExportCompleted, second.EventName));
+            first =>
+            {
+                Assert.Equal(DataImportExportEventNames.ExportStarted, first.EventName);
+                Assert.Equal(".xlsx", first.Extension);
+                Assert.Equal("Export operation started.", first.Message);
+                Assert.True(first.OccurredAtUtc <= DateTimeOffset.UtcNow);
+            },
+            second =>
+            {
+                Assert.Equal(DataImportExportEventNames.ExportCompleted, second.EventName);
+                Assert.Equal(".xlsx", second.Extension);
+                Assert.Equal("Export operation completed with 2 rows.", second.Message);
+                Assert.True(second.OccurredAtUtc <= DateTimeOffset.UtcNow);
+            });
     }
 
     [Fact]
@@ -166,6 +190,9 @@ public class DataFormatRouterTests
         Assert.Equal(2, publisher.Events.Count);
         Assert.Equal(DataImportExportEventNames.ImportStarted, publisher.Events[0].EventName);
         Assert.Equal(DataImportExportEventNames.ImportFailed, publisher.Events[1].EventName);
+        Assert.Equal(".json", publisher.Events[1].Extension);
+        Assert.StartsWith("[DIXMGR:.json:IMPORT:CONTRACT]", publisher.Events[1].Message, StringComparison.Ordinal);
+        Assert.True(publisher.Events[1].OccurredAtUtc <= DateTimeOffset.UtcNow);
     }
 
     [Theory]
