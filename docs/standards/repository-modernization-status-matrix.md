@@ -4,7 +4,7 @@
 - Name: `DataImportExportManager`
 - Last updated: `2026-04-23`
 - Branch: `master`
-- Latest commit: `bc6cf70`
+- Latest commit: `0b3554e`
 - Working tree at checkpoint: clean
 
 ## Summary
@@ -93,8 +93,7 @@ To continue from this exact checkpoint:
 4. For schema-mismatch UX, consume `SchemaValidationResult.AvailableActions` and `IImportSchemaSessionCache` session IDs to offer "correct file" vs "continue with remap" without reupload.
 
 Current in-flight PR state at this checkpoint:
-- Active PR from `feature/next-bundle-2-from-dev` -> `dev` is present and includes current head `bc6cf70`.
-- Auto-complete is enabled on the active PR (set by `tcrowe@singlesourcemanagement.com`).
+- No active PR from `feature/next-bundle-2-from-dev` -> `dev` at this checkpoint (latest bundle merged).
 
 Useful verification commands:
 - `dotnet test`
@@ -103,7 +102,7 @@ Useful verification commands:
 
 ## Next Planned Bundle Candidate
 Project closeout hardening:
-1. Execute first consumer API integration observation checklist and capture findings.
+1. Execute first consumer API integration observation checklist and capture findings using `docs/standards/consumer-integration-observation-record-template.md`.
 2. Confirm whether event payload enrichment is unnecessary or define a minimal enrichment delta.
 3. If enrichment is required, implement only consumer-validated fields and extend tests/docs accordingly.
 
@@ -154,3 +153,4 @@ Add payload enrichers only if checklist item 5 fails in real consumer integratio
 - `docs/standards/existing-repositories-rollout-execution-plan.md`
 - `docs/standards/targeted-repositories-modernization-backlog.md`
 - `docs/standards/azure-devops-branch-policy-checklist.md`
+- `docs/standards/consumer-integration-observation-record-template.md`
