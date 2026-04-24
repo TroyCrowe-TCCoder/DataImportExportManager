@@ -3,9 +3,9 @@
 ## Metadata
 - Date: 2026-04-24
 - Environment (dev/test/prod-like): dev
-- API application name: Pending (to be supplied during first consumer rollout)
-- Feature branch / commit: feature/next-bundle-2-from-dev / 82f4f43
-- Observer: Pending
+- API application name: Pending first API rollout execution
+- Feature branch / commit: feature/next-bundle-2-from-dev / 5cd6107
+- Observer: Library validation checkpoint (integration observer to be assigned for API rollout)
 
 ## Event Mapping Verification
 1. `EventName` -> API notification type mapping
@@ -26,19 +26,26 @@
 
 ## Decision Gate
 - Did any API/UI routing decision require a missing field from `DataImportExportEvent`?
-  - No missing field identified at library-scope validation. Consumer rollout confirmation still required.
+  - No missing field identified at library-scope validation. Consumer rollout confirmation remains required.
 - If Yes, list each missing field and consumer scenario:
-  - None identified yet (awaiting first consumer rollout data).
+  - None identified at current checkpoint.
 
 ## Enrichment Recommendation
-- Recommendation: Deferred pending first consumer rollout evidence.
 - Recommendation: No enrichment required at current library-scope evidence level; confirm during consumer rollout.
 - If enrichment required, proposed minimal field set:
-  - TBD from observed consumer routing gaps.
+  - None currently proposed.
 - Why each field is required (consumer-evidence based):
-  - TBD from observed consumer routing gaps.
+  - Not applicable unless rollout evidence identifies a concrete routing gap.
 
 ## Follow-up Actions
-- Action 1: Execute first API integration pass and populate all pending evidence fields.
+- Action 1: Execute first API integration pass and confirm evidence in a rollout addendum section.
 - Action 2: Confirm API localization strategy (direct message vs lookup-key translation) using current `Message` payload.
 - Action 3: If any missing field is identified during rollout, define minimal enrichment delta and add tests/docs before implementation.
+
+## Rollout Addendum (To Be Completed During First API Integration)
+- API application name:
+- Observer:
+- Rollout environment:
+- Localization decision (direct message vs lookup key):
+- Missing field identified? (Yes/No):
+- If Yes, minimal enrichment fields + rationale:
