@@ -282,6 +282,33 @@ services.AddDataImportExportManager();
 services.AddImportSchemaSessionCache();
 ```
 
+### Event Payload Mapping for API -> UI Toast Projection
+
+When forwarding `DataImportExportEvent` notifications from API to UI, use these fields as the default projection contract:
+
+- `EventName` -> toast category/key (for example `import.completed`, `schema.validation.mismatch`)
+- `Message` -> user-facing toast text (or a localization lookup key in your API)
+- `OccurredAtUtc` -> timeline ordering and UI timestamp display
+- `Extension` -> file-format context for import/export events
+- `TenantId`, `SubjectId` -> optional scoping/filtering in multi-tenant event streams
+- `SessionId` -> remap/retry flow correlation for schema session events
+- `DecisionCode`, `AvailableActions` -> schema mismatch UX actions (`CorrectSourceFile` / `ContinueWithRemap`)
+
+Suggested API projection shape:
+
+```csharp
+public sealed record UiToastEvent(
+    string Type,
+    string Message,
+    DateTimeOffset OccurredAtUtc,
+    string? Extension = null,
+    string? SessionId = null,
+    string? DecisionCode = null,
+    IReadOnlyList<string>? Actions = null);
+```
+
+For this library, payload enrichment (for example correlation IDs) should remain optional and be added only when consumer integration evidence requires additional fields.
+
 Avoid reuploading on mismatch by caching the imported payload in a short-lived tenant-scoped session:
 
 ```csharp

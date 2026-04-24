@@ -103,9 +103,9 @@ Useful verification commands:
 
 ## Next Planned Bundle Candidate
 Project closeout hardening:
-1. Finalize project completion recommendation and backlog any non-blocking follow-up items.
-2. Monitor first consumer integration pass for any missing event payload fields.
-3. Add optional event payload enrichers only if integration evidence requires additional context.
+1. Execute first consumer API integration observation checklist and capture findings.
+2. Confirm whether event payload enrichment is unnecessary or define a minimal enrichment delta.
+3. If enrichment is required, implement only consumer-validated fields and extend tests/docs accordingly.
 
 ## Planning Continuity Ledger
 Completed planning bundles (preserve for next-session continuity):
@@ -137,6 +137,17 @@ Planned-but-not-started items to retain in backlog:
 - Non-blocking follow-up backlog:
   - Observe first API integration rollout for any additional toast-routing metadata needs.
   - Consider optional enrichers (for example correlation IDs) only after concrete consumer requirements are validated.
+
+## Consumer Integration Observation Checklist (First Rollout)
+Use this checklist during the first API integration pass to decide whether additional event payload fields are needed:
+
+1. Verify every emitted `EventName` maps to a deterministic API notification type.
+2. Verify `Message` values are suitable for UI display or localization-key translation.
+3. Verify schema mismatch events include `DecisionCode` and actionable `AvailableActions` for remap UX.
+4. Verify session lifecycle events include `SessionId` for retry/resume correlation.
+5. Verify no required API/UI routing decision depends on fields missing from `DataImportExportEvent`.
+
+Add payload enrichers only if checklist item 5 fails in real consumer integration evidence.
 
 ## References
 - `docs/standards/repository-modernization-checklist.md`
