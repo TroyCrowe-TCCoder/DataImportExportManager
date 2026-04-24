@@ -4,11 +4,13 @@
 - Name: `DataImportExportManager`
 - Last updated: `2026-04-24`
 - Branch: `master`
-- Latest commit: `ebe606a`
+- Latest commit: `720c047`
 - Working tree at checkpoint: clean
 
 ## Summary
 Modernization and expansion work has progressed from CSV/Excel baseline to multi-format deterministic routing with strong diagnostics governance.
+
+SaaS deployment guidance now explicitly distinguishes hosting-API passthrough configuration for external-service integrations from self-hosted library options for internal behavior tuning.
 
 Implemented and verified in this repo:
 - Deterministic format routing via `IDataFormatRouter` / `DataFormatRouter`
@@ -61,6 +63,7 @@ Latest session checkpoint outcomes:
 | Standards and instructions | Complete | `.github/copilot-instructions.md` now contains project-specific guidance and execution rules. | Keep instructions synced with actual workflow changes. |
 | Structure and naming | Complete | Library + test layout aligned (`DataImportExportManager` + `DataImportExportManager.Tests`) with deterministic router and per-format import/export implementations. | Preserve consistency for new format additions. |
 | Configuration and options | Complete | Options classes and DI callbacks added for CSV/JSON/NDJSON/XML/Excel scenarios. | Add option-validation tests for any new options added later. |
+| SaaS configuration boundary guidance | Complete | README includes explicit passthrough-vs-self-hosted configuration ownership and self-standup operator guidance; observation template includes SaaS boundary verification checks. | Keep host-API configuration documentation synchronized with supported integration points. |
 | Session cache lifecycle and hardening | Complete | Distributed session cache now supports configurable key-prefix isolation and max payload guard rails with deterministic behavior; tests cover limits and isolation scenarios. | Add explicit consumer-facing docs snippet for distributed cache option tuning examples. |
 | Event-driven integration hooks | Complete | `IDataImportExportEventPublisher` and lifecycle event contracts are wired through router and session caches with DI override support and no-op default implementation. | Evaluate DI-safe schema-validation event publishing path in a future refinement bundle. |
 | Schema validation notification publishing | Complete | Async schema validation overloads publish deterministic schema-mismatch events through `IDataImportExportEventPublisher`; tests cover mismatch publish vs match no-publish behavior. | Keep event payload fields aligned with API toast/notification contracts. |
@@ -93,7 +96,7 @@ To continue from this exact checkpoint:
 4. For schema-mismatch UX, consume `SchemaValidationResult.AvailableActions` and `IImportSchemaSessionCache` session IDs to offer "correct file" vs "continue with remap" without reupload.
 
 Current in-flight PR state at this checkpoint:
-- No active PR from `feature/next-bundle-2-from-dev` -> `dev` at this checkpoint (latest bundle merged to `dev` commit `c759f4d`, source commit `ebe606a`).
+- No active PR from `feature/next-bundle-2-from-dev` -> `dev` at this checkpoint (latest bundle merged to `dev` commit `4c492a4`, source commit `720c047`).
 
 Useful verification commands:
 - `dotnet test`
