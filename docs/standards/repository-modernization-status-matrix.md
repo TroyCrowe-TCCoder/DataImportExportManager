@@ -4,7 +4,7 @@
 - Name: `DataImportExportManager`
 - Last updated: `2026-04-23`
 - Branch: `master`
-- Latest commit: `7e405e0`
+- Latest commit: `5cd6107`
 - Working tree at checkpoint: clean
 
 ## Summary
@@ -93,7 +93,7 @@ To continue from this exact checkpoint:
 4. For schema-mismatch UX, consume `SchemaValidationResult.AvailableActions` and `IImportSchemaSessionCache` session IDs to offer "correct file" vs "continue with remap" without reupload.
 
 Current in-flight PR state at this checkpoint:
-- No active PR from `feature/next-bundle-2-from-dev` -> `dev` at this checkpoint (latest bundle merged to `dev` commit `1f93795`).
+- No active PR from `feature/next-bundle-2-from-dev` -> `dev` at this checkpoint (latest bundle merged to `dev` commit `5db156f`).
 
 Useful verification commands:
 - `dotnet test`
@@ -102,7 +102,7 @@ Useful verification commands:
 
 ## Next Planned Bundle Candidate
 Project closeout hardening:
-1. Complete pending evidence fields in `docs/standards/consumer-integration-observation-record-2026-04-24.md` during first API rollout.
+1. Complete rollout addendum fields in `docs/standards/consumer-integration-observation-record-2026-04-24.md` during first API rollout.
 2. Confirm whether event payload enrichment is unnecessary or define a minimal enrichment delta.
 3. If enrichment is required, implement only consumer-validated fields and extend tests/docs accordingly.
 
@@ -136,7 +136,7 @@ Planned-but-not-started items to retain in backlog:
 - Primary artifact to update: `docs/standards/consumer-integration-observation-record-2026-04-24.md`
 - Timebox: 1 focused session (capture evidence + enrichment decision)
 - Definition of done:
-  1. All pending evidence fields in the dated observation record are resolved.
+  1. All rollout addendum fields in the dated observation record are resolved.
   2. Enrichment decision is explicit ("no enrichment" or minimal field set with rationale).
   3. If enrichment is required, create implementation task list with tests/docs scope.
 
