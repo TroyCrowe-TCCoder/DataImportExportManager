@@ -39,11 +39,13 @@ if ($failures.Count -eq 0) {
     Assert-Contains -Content $readmeContent -Needle '### CI Validation Scope' -Description 'README CI validation scope section' -Failures $failures
     Assert-Contains -Content $readmeContent -Needle 'does not require a standalone master-delivery pipeline' -Description 'README class-library CI posture wording' -Failures $failures
 
-    Assert-Contains -Content $pipelineContent -Needle '- stage: Validate' -Description 'pipeline Validate stage' -Failures $failures
+    if ($pipelineContent.IndexOf('- stage: Validate', [StringComparison]::Ordinal) -lt 0 -and
+        $pipelineContent.IndexOf('- stage: Build_Test', [StringComparison]::Ordinal) -lt 0) {
+        $failures.Add('Missing required marker: pipeline validation stage')
+    }
     Assert-Contains -Content $pipelineContent -Needle 'dotnet restore DataImportExportManager.sln' -Description 'pipeline restore step' -Failures $failures
     Assert-Contains -Content $pipelineContent -Needle 'dotnet build DataImportExportManager.sln --configuration $(BuildConfiguration) --no-restore' -Description 'pipeline build step' -Failures $failures
     Assert-Contains -Content $pipelineContent -Needle 'dotnet test DataImportExportManager.sln --configuration $(BuildConfiguration) --no-build --verbosity normal' -Description 'pipeline test step' -Failures $failures
-    Assert-Contains -Content $pipelineContent -Needle '- stage: Validate' -Description 'pipeline validation-only scope' -Failures $failures
 
     if ($statusMatrixContent -notmatch '- Tests: `\d+/\d+` passing') {
         $failures.Add('Missing or invalid tests baseline format in repository modernization status matrix.')

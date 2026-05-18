@@ -179,7 +179,7 @@ public class DiagnosticsConformanceTests
     private static HashSet<string> GetReadmeDiagnosticsCodes([CallerFilePath] string sourceFile = "")
     {
         var testsProjectDir = Path.GetDirectoryName(sourceFile)!;
-        var readmePath = Path.GetFullPath(Path.Combine(testsProjectDir, "..", "DataImportExportManager", "README.md"));
+        var readmePath = Path.GetFullPath(Path.Combine(testsProjectDir, "..", "README.md"));
 
         Assert.True(File.Exists(readmePath), $"README.md not found at expected path: {readmePath}");
 
@@ -224,7 +224,7 @@ public class DiagnosticsConformanceTests
     private static HashSet<string> GetReadmeDiagnosticsOperations([CallerFilePath] string sourceFile = "")
     {
         var testsProjectDir = Path.GetDirectoryName(sourceFile)!;
-        var readmePath = Path.GetFullPath(Path.Combine(testsProjectDir, "..", "DataImportExportManager", "README.md"));
+        var readmePath = Path.GetFullPath(Path.Combine(testsProjectDir, "..", "README.md"));
 
         Assert.True(File.Exists(readmePath), $"README.md not found at expected path: {readmePath}");
 

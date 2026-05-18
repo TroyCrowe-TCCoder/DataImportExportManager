@@ -1,0 +1,145 @@
+# auto-pr-chain.yml
+# Reusable template — creates the next carry-forward PR in the delivery chain.
+#
+# Usage: Call from a pipeline that triggers on CI push to 'dev' (or 'qa' when introduced).
+# The template looks up the most recently merged PR to the current branch, then creates
+# the next PR with the same title and description, and enables auto-complete.
+#
+# Parameters:
+#   adoOrg        — Azure DevOps organization name  (e.g. tcrowe0170)
+#   adoProject    — Azure DevOps project name        (e.g. MyProject)
+#   repositoryId  — Repository name or GUID          (e.g. MyRepo)
+#   sourceBranch  — Current branch being pushed      (e.g. dev)
+#   targetBranch  — Next branch in the chain         (e.g. main)
+#
+# Authentication: System.AccessToken is used. The pipeline's job must set
+# 'persistCredentials: true' and the build service identity must have
+# 'Contribute to pull requests' permission on the repository.
+
+parameters:
+  - name: adoOrg
+    type: string
+  - name: adoProject
+    type: string
+  - name: repositoryId
+    type: string
+  - name: sourceBranch
+    type: string
+  - name: targetBranch
+    type: string
+
+steps:
+  - task: PowerShell@2
+    displayName: 'Create carry-forward PR → ${{ parameters.targetBranch }}'
+    env:
+      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+    inputs:
+      targetType: inline
+      script: |
+        $org        = '${{ parameters.adoOrg }}'
+        $project    = '${{ parameters.adoProject }}'
+        $repoId     = '${{ parameters.repositoryId }}'
+        $source     = 'refs/heads/${{ parameters.sourceBranch }}'
+        $target     = 'refs/heads/${{ parameters.targetBranch }}'
+        $baseUrl    = "https://dev.azure.com/$org/$project/_apis/git/repositories/$repoId"
+        $apiVersion = 'api-version=7.1'
+        $headers    = @{
+          Authorization  = "Bearer $env:SYSTEM_ACCESSTOKEN"
+          'Content-Type' = 'application/json'
+        }
+
+        # ── Step 1: Find the most recently merged PR to the source branch ──────
+        $mergedUrl = "$baseUrl/pullrequests?searchCriteria.status=completed" +
+                     "&searchCriteria.targetRefName=$source&`$top=1&$apiVersion"
+        $mergedResponse = Invoke-RestMethod -Uri $mergedUrl -Headers $headers -Method Get
+
+        if ($mergedResponse.count -eq 0) {
+          Write-Host "##[warning]No completed PRs found targeting ${{ parameters.sourceBranch }}. Skipping carry-forward."
+          exit 0
+        }
+
+        $mergedPr    = $mergedResponse.value[0]
+        $prTitle     = $mergedPr.title
+        $prDesc      = $mergedPr.description
+        $mergedPrId  = $mergedPr.pullRequestId
+        $mergedPrUrl = "https://dev.azure.com/$org/$project/_git/$repoId/pullrequest/$mergedPrId"
+
+        Write-Host "Source PR #$mergedPrId — '$prTitle'"
+
+        # ── Step 2: Check for an existing open PR on the same source→target ────
+        $openUrl = "$baseUrl/pullrequests?searchCriteria.status=active" +
+                   "&searchCriteria.sourceRefName=$source" +
+                   "&searchCriteria.targetRefName=$target&$apiVersion"
+        $openResponse = Invoke-RestMethod -Uri $openUrl -Headers $headers -Method Get
+
+        if ($openResponse.count -gt 0) {
+          $existingId = $openResponse.value[0].pullRequestId
+          Write-Host "##[section]Open PR #$existingId already exists from ${{ parameters.sourceBranch }} → ${{ parameters.targetBranch }}. Skipping creation."
+          exit 0
+        }
+
+        # ── Step 3: Build a structured description ──────────────────────────────
+        # Fetch the commits on sourceBranch that are not yet on targetBranch
+        $commitsUrl      = "$baseUrl/commits?searchCriteria.itemVersion.version=${{ parameters.sourceBranch }}" +
+                           "&searchCriteria.compareVersion.version=${{ parameters.targetBranch }}" +
+                           "&`$top=50&$apiVersion"
+        $commitsResponse = Invoke-RestMethod -Uri $commitsUrl -Headers $headers -Method Get
+
+        $changeLines = @()
+        if ($commitsResponse.count -gt 0) {
+          foreach ($commit in $commitsResponse.value) {
+            # Use only the first line of the commit message as the change entry
+            $msg = ($commit.comment -split "`n")[0].Trim()
+            $sha = $commit.commitId.Substring(0, 7)
+            $changeLines += "- $msg ($sha)"
+          }
+        }
+
+        $changeSection = if ($changeLines.Count -gt 0) {
+          "## Changes`n" + ($changeLines -join "`n")
+        } else {
+          "## Changes`n- No new commits detected beyond the merged PR."
+        }
+
+        $originSection  = "## Origin PR`nCarried forward from PR #$mergedPrId`: $mergedPrUrl"
+        $summarySection = if ($prDesc) { "## Summary`n$prDesc" } else { "" }
+
+        $fullDescription = (@($originSection, $changeSection, $summarySection) |
+                            Where-Object { $_ -ne "" }) -join "`n`n"
+
+        # ── Step 4: Create the carry-forward PR ─────────────────────────────────
+        $body = @{
+          title         = $prTitle
+          description   = $fullDescription
+          sourceRefName = $source
+          targetRefName = $target
+        } | ConvertTo-Json -Depth 5
+
+        $createUrl      = "$baseUrl/pullrequests?$apiVersion"
+        $createResponse = Invoke-RestMethod -Uri $createUrl -Headers $headers -Method Post -Body $body
+        $newPrId        = $createResponse.pullRequestId
+        $newPrUrl       = "https://dev.azure.com/$org/$project/_git/$repoId/pullrequest/$newPrId"
+
+        Write-Host "##[section]Created PR #$newPrId: $newPrUrl"
+
+        # ── Step 5: Enable auto-complete ─────────────────────────────────────────
+        # Retrieve the build service identity id from the PR creator field
+        $creatorId = $createResponse.createdBy.id
+
+        $acBody = @{
+          autoCompleteSetBy = @{ id = $creatorId }
+          completionOptions = @{
+            mergeStrategy            = 'squash'
+            deleteSourceBranch       = $false
+            bypassPolicy             = $false
+            bypassReason             = ''
+            transitionWorkItems      = $false
+            squashMerge              = $true
+          }
+        } | ConvertTo-Json -Depth 5
+
+        $updateUrl = "$baseUrl/pullrequests/$($newPrId)?$apiVersion"
+        Invoke-RestMethod -Uri $updateUrl -Headers $headers -Method Patch -Body $acBody | Out-Null
+
+        Write-Host "Auto-complete enabled on PR #$newPrId."
+        Write-Host "Carry-forward PR ready: ${{ parameters.sourceBranch }} → ${{ parameters.targetBranch }} | $newPrUrl"

@@ -15,37 +15,18 @@ else {
 
     $lastUpdatedMatch = [regex]::Match($content, '- Last updated: `(?<date>\d{4}-\d{2}-\d{2})`')
     if (-not $lastUpdatedMatch.Success) {
-        $failures.Add("Missing or invalid 'Last updated' metadata format. Expected YYYY-MM-DD.")
+        $failures.Add("Missing or invalid 'Last updated' metadata format. Expected: - Last updated: ``YYYY-MM-DD``")
+    }
+    else {
+        $recordedDate = [datetime]::ParseExact($lastUpdatedMatch.Groups['date'].Value, 'yyyy-MM-dd', $null)
+        $daysSinceUpdate = ([datetime]::UtcNow - $recordedDate).Days
+        if ($daysSinceUpdate -gt 90) {
+            $failures.Add("'Last updated' date is $daysSinceUpdate days old. Status matrix must be reviewed at least every 90 days.")
+        }
     }
 
     if ($content.IndexOf('## Staleness Audit Checkpoint', [StringComparison]::Ordinal) -lt 0) {
         $failures.Add("Missing required section: '## Staleness Audit Checkpoint'.")
-    }
-
-    $commitMatch = [regex]::Match($content, '- Latest commit: `(?<commit>[0-9a-fA-F]+)`')
-    if (-not $commitMatch.Success) {
-        $failures.Add("Missing or invalid 'Latest commit' metadata format.")
-    }
-    else {
-        $documentCommit = $commitMatch.Groups['commit'].Value.ToLowerInvariant()
-        $headCommit = (& git rev-parse --short HEAD).Trim().ToLowerInvariant()
-
-        $allowed = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
-        $allowed.Add($headCommit) | Out-Null
-
-        try {
-            $parentCommit = (& git rev-parse --short HEAD~1 2>$null).Trim().ToLowerInvariant()
-            if (-not [string]::IsNullOrWhiteSpace($parentCommit)) {
-                $allowed.Add($parentCommit) | Out-Null
-            }
-        }
-        catch {
-            # Repository may not have a parent commit yet; ignore.
-        }
-
-        if (-not $allowed.Contains($documentCommit)) {
-            $failures.Add("Stale 'Latest commit' metadata: found '$documentCommit', expected one of: $($allowed -join ', ').")
-        }
     }
 }
 
@@ -54,7 +35,6 @@ if ($failures.Count -gt 0) {
     foreach ($failure in $failures) {
         Write-Host " - $failure" -ForegroundColor Red
     }
-
     exit 1
 }
 

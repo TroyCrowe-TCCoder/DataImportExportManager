@@ -1,11 +1,12 @@
-# Repository Copilot Addendum Template
+# Repository Addendum
 
-Use this file as the repository-local `.github/copilot-instructions.md` starting point. Keep only meaningful project-specific deviations here. Global rules should live in the shared standards documents and global Copilot user instructions.
+- **Global baseline:** [docs/standards/global-governance-standards.md](../docs/standards/global-governance-standards.md)
 
-## Shared Standards
-Global reusable engineering standards live in `docs/standards/global-engineering-standards.md`.  
-The reusable Copilot user-instructions template lives in `docs/standards/copilot-global-user-instructions-template.md`.  
-This repository instruction file should contain only project-specific context, deployment details, and approved deviations from the shared baseline.
+## Repository Initialization Rules
+- This repository follows the class-library non-deployed-products model.
+- Keep repository-local deviations only in the root standards/ folder when approved for this repository.
+- Add and maintain a repository-local validation entry point at scripts/validate.ps1.
+- The eature/* -> dev path must create the traceable package output promoted later through the dev -> main flow.
 
 ## General Guidelines
 - Avoid repetitive recurrence prompts. Provide a direct remediation strategy and continue execution without conversational detours.
@@ -51,3 +52,4 @@ This repository instruction file should contain only project-specific context, d
 - Add only deviations from the global performance baseline.
 - Example: cache only tenant-scoped configuration by `clientId`.
 - Example: do not cache content payloads.
+

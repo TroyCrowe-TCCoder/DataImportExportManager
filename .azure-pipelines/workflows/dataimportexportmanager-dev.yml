@@ -1,0 +1,92 @@
+trigger: none
+
+pr:
+  branches:
+    include:
+      - dev
+
+name: $(Date:yyyyMMdd)$(Rev:.r)
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  BuildConfiguration: Release
+
+stages:
+
+  - stage: Build
+    displayName: Build and Validate
+    jobs:
+      - job: BuildAndTest
+        displayName: Restore, build, and test
+        steps:
+          - checkout: self
+
+          - script: pwsh -NoProfile -File scripts/ci/Validate-ModernizationStatusMetadata.ps1
+            displayName: Validate modernization status metadata
+
+          - script: pwsh -NoProfile -File scripts/ci/Validate-MarkdownLinks.ps1
+            displayName: Validate markdown links
+
+          - script: pwsh -NoProfile -File scripts/ci/Validate-DocsAndPipelineContracts.ps1
+            displayName: Validate docs and pipeline contracts
+
+          - task: UseDotNet@2
+            displayName: Use .NET SDK 10.x
+            inputs:
+              packageType: sdk
+              version: 10.0.x
+              includePreviewVersions: true
+
+          - script: dotnet restore DataImportExportManager.sln
+            displayName: dotnet restore
+
+          - script: dotnet build DataImportExportManager.sln --configuration $(BuildConfiguration) --no-restore
+            displayName: dotnet build
+
+          - script: dotnet test DataImportExportManager.sln --configuration $(BuildConfiguration) --no-build --verbosity normal
+            displayName: dotnet test
+
+  - stage: NotifyFailure
+    displayName: Notify PR on Failure
+    dependsOn: Build
+    condition: |
+      and(
+        failed(),
+        eq(variables['Build.Reason'], 'PullRequest')
+      )
+    jobs:
+      - job: PostFailureComment
+        displayName: Post failure comment to PR
+        pool:
+          vmImage: ubuntu-latest
+        continueOnError: true
+        steps:
+          - task: PowerShell@2
+            displayName: Post PR failure notification
+            continueOnError: true
+            env:
+              SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+            inputs:
+              targetType: inline
+              script: |
+                $ErrorActionPreference = 'Stop'
+                $prId = "$(System.PullRequest.PullRequestId)"
+                if ([string]::IsNullOrWhiteSpace($prId)) { Write-Host "No PR context."; exit 0 }
+                if ([string]::IsNullOrWhiteSpace($env:SYSTEM_ACCESSTOKEN)) {
+                  Write-Host "##vso[task.logissue type=warning]System.AccessToken unavailable."
+                  exit 0
+                }
+                $buildUrl = "$(System.CollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)"
+                $body = @{
+                  comments = @(@{
+                    parentCommentId = 0
+                    content = "Build validation failed for **$(Build.BuildNumber)**. Auto-merge is blocked. Build details: $buildUrl"
+                    commentType = 1
+                  })
+                  status = 1
+                } | ConvertTo-Json -Depth 5
+                $uri = "$(System.CollectionUri)$(System.TeamProject)/_apis/git/repositories/$(Build.Repository.ID)/pullRequests/$prId/threads?api-version=7.1-preview.1"
+                Invoke-RestMethod -Method Post -Uri $uri -Headers @{ Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN" } -ContentType 'application/json' -Body $body | Out-Null
+                Write-Host "Posted failure notification to PR #$prId."

@@ -3,7 +3,6 @@ namespace DataImportExportManager.Tests;
 using DataImportExportManager.Contracts;
 using DataImportExportManager.Extensions;
 using DataImportExportManager.Interfaces;
-using DataImportExportManager.Interfaces;
 
 public class DataImportSchemaExtensionsTests
 {
@@ -291,8 +290,8 @@ public class DataImportSchemaExtensionsTests
         Assert.Equal(SchemaValidationResult.SchemaMismatchCode, publisher.Events[0].DecisionCode);
         Assert.NotNull(publisher.Events[0].AvailableActions);
         Assert.Equal(2, publisher.Events[0].AvailableActions!.Count);
-        Assert.Contains(SchemaMismatchAction.CorrectSourceFile, publisher.Events[0].AvailableActions);
-        Assert.Contains(SchemaMismatchAction.ContinueWithRemap, publisher.Events[0].AvailableActions);
+        Assert.Contains(SchemaMismatchAction.CorrectSourceFile, publisher.Events[0].AvailableActions!);
+        Assert.Contains(SchemaMismatchAction.ContinueWithRemap, publisher.Events[0].AvailableActions!);
         Assert.Equal("Schema validation mismatch detected.", publisher.Events[0].Message);
         Assert.True(publisher.Events[0].OccurredAtUtc <= DateTimeOffset.UtcNow);
     }

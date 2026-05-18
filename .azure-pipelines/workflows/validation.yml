@@ -1,0 +1,32 @@
+trigger: none
+
+pr:
+  branches:
+    include:
+      - dev
+
+name: $(Date:yyyyMMdd)$(Rev:.r)
+
+variables:
+- template: ../variables/common.yml
+
+pool:
+  vmImage: windows-latest
+
+steps:
+- checkout: self
+  clean: true
+
+- task: PowerShell@2
+  displayName: Run repository validation entry point
+  inputs:
+    pwsh: true
+    filePath: scripts/validate.ps1
+    arguments: -Pack
+
+- task: PublishBuildArtifacts@1
+  displayName: Publish NuGet package artifact
+  inputs:
+    PathtoPublish: artifacts
+    ArtifactName: $(packageArtifactName)
+    publishLocation: Container

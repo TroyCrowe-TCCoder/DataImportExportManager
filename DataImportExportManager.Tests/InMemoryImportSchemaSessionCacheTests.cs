@@ -102,7 +102,7 @@ public class InMemoryImportSchemaSessionCacheTests
 
         _ = await cache.ConsumeAsync("tenant-a", "user-a", sessionId);
 
-        var consumedEvent = Assert.Single(publisher.Events.Where(e => e.EventName == DataImportExportEventNames.SessionConsumed));
+        var consumedEvent = Assert.Single(publisher.Events, e => e.EventName == DataImportExportEventNames.SessionConsumed);
         Assert.Equal("tenant-a", consumedEvent.TenantId);
         Assert.Equal("user-a", consumedEvent.SubjectId);
         Assert.Equal(sessionId, consumedEvent.SessionId);

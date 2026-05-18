@@ -2,6 +2,14 @@
 
 A .NET 10 library for deterministic tabular data import/export across CSV, Excel (.xlsx), JSON, and NDJSON (.ndjson/.jsonl) formats.
 
+## Local Validation
+
+Run the repository-local validation entry point before creating or updating a pull request:
+
+pwsh ./scripts/validate.ps1 -Pack
+
+This repository follows the class-library promotion model. The validation entry point restores, builds, runs tests when test projects exist, and produces the traceable package output used for promotion.
+
 ## Features
 
 - **CSV/TSV import/export** — RFC 4180–compliant parsing and writing with full support for multi-line quoted fields, configurable delimiter, and configurable encoding.
@@ -566,6 +574,14 @@ This project is licensed under the MIT License — see [LICENSE](LICENSE) for de
 
 A .NET 10 library for importing and exporting tabular data between CSV and Excel (.xlsx) formats using a clean, extensible architecture.
 
+## Local Validation
+
+Run the repository-local validation entry point before creating or updating a pull request:
+
+pwsh ./scripts/validate.ps1 -Pack
+
+This repository follows the class-library promotion model. The validation entry point restores, builds, runs tests when test projects exist, and produces the traceable package output used for promotion.
+
 ## Features
 
 - **CSV import/export** — RFC 4180–compliant parsing and writing with quoted field support.
@@ -741,3 +757,4 @@ The solution follows SOLID principles:
 ## License
 
 This project is licensed under the MIT License — see [LICENSE](LICENSE) for details.
+

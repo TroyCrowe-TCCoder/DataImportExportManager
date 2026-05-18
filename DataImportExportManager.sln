@@ -5,7 +5,7 @@ VisualStudioVersion = 18.4.11620.152
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataImportExportManager", "DataImportExportManager.csproj", "{44B16145-9CF4-456E-97C7-5C22A90F6E35}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataImportExportManager.Tests", "..\DataImportExportManager.Tests\DataImportExportManager.Tests.csproj", "{6C49683C-A9E6-434A-B319-10240E336081}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataImportExportManager.Tests", "DataImportExportManager.Tests\DataImportExportManager.Tests.csproj", "{6C49683C-A9E6-434A-B319-10240E336081}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B0F2A07E-6D3B-4F9A-8C1D-5E7A9B3C4D6F}"
 	ProjectSection(SolutionItems) = preProject
