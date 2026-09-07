@@ -36,15 +36,15 @@
 - Keep all test projects and test files inside the DataImportExportManager repository so any developer can run and extend tests from the repo clone alone.
 
 ## Repository Branching and Check-In Governance
-- Branch flow is enforced as: `local branch` -> `remote branch` -> PR to `dev` -> PR to `master`.
+- Branch flow is enforced as: `local branch` -> `remote branch` -> PR to `dev` -> PR to `main`.
 - Contributors other than repository owner must open pull requests from their branch into `dev` only.
-- Direct pushes to `dev` and `master` are disallowed for non-owner users.
-- Merge from `dev` to `master` requires repository owner approval (no second approver) while still allowing additional optional approvals.
-- `master` merge completion remains PR-governed with no direct contributor check-ins.
-- PRs must always target the local feature branch into `dev` (never directly to `master`).
+- Direct pushes to `dev` and `main` are disallowed for non-owner users.
+- Merge from `dev` to `main` requires repository owner approval (no second approver) while still allowing additional optional approvals.
+- `main` merge completion remains PR-governed with no direct contributor check-ins.
+- PRs must always target the local feature branch into `dev` (never directly to `main`).
 
 ## Continuous Integration Preferences
-- Run build/tests on `feature/*` pushes, `dev` pushes, and PRs targeting `dev` or `master`.
+- Run build/tests on `feature/*` pushes, `dev` pushes, and PRs targeting `dev` or `main`.
 - Keep CI focused on validation automation (restore/build/test and docs guards).
 - For this class library, do not require a delivery pipeline; only use CI pipeline for test automation/validation as needed because it is consumed by other applications and not standalone.
 

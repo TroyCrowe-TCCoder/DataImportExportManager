@@ -3,7 +3,7 @@
 ## Repository
 - Name: `DataImportExportManager`
 - Last updated: `2026-05-15`
-- Branch: `master`
+- Branch: `main`
 - Latest commit: `53c4ce2`
 - Working tree at checkpoint: clean
 
@@ -35,7 +35,7 @@ Latest session checkpoint outcomes:
 - DI-safe schema-validation notification path implemented via `ValidateSchemaAsync(..., IDataImportExportEventPublisher, ...)` overloads to emit schema-mismatch events through the shared publisher abstraction.
 - Event contract field sufficiency reviewed for API toast-notification usage; current payload shape supports lifecycle status, scope identity, schema decision context, and user-facing message projection without additional required fields.
 - Test project and test files are now located inside repository root (`DataImportExportManager.Tests`) to keep clone-local build/test extensibility.
-- Branch governance finalized as PR-only (`dev` -> `master`) with owner-required approval and no second approver requirement.
+- Branch governance finalized as PR-only (`dev` -> `main`) with owner-required approval and no second approver requirement.
 
 ## Staleness Audit Checkpoint
 - Scope executed: stale-code signals, markdown link integrity, and cross-document flow/governance drift.
@@ -70,21 +70,21 @@ Latest session checkpoint outcomes:
 | Testing and quality | Complete | Broad xUnit coverage including contract, integration-style DI tests, diagnostics conformance tests, docs-sync guards, and session-cache performance baseline tests; latest run `229/229`. | Maintain coverage parity for each new public API/diagnostic code. |
 | Observability and diagnostics | Complete | Structured diagnostics prefix (`[DIXMGR:...]`), centralized catalog (`ContractDiagnostics`), operation/code documentation, and conformance enforcement tests. | Keep catalog/tables/tests synchronized when adding codes. |
 | Performance and resilience | Complete (current scope) | Async import/export paths, size guards, deterministic parsing/export behavior, and existing performance-conscious implementation patterns retained. | Add targeted benchmarks only if regression signal appears. |
-| CI/CD and delivery | Complete (library scope) | Local validation entry point at `scripts/validate.ps1` validates `feature/*`/`dev` flow and PRs; branch policies enforce PR-only promotion to `master` with no direct contributor pushes to `dev` or `master`. | Keep policy and validation script drift checks synchronized with actual workflow. |
+| CI/CD and delivery | Complete (library scope) | Local validation entry point at `scripts/validate.ps1` validates `feature/*`/`dev` flow and PRs; branch policies enforce PR-only promotion to `main` with no direct contributor pushes to `dev` or `main`. | Keep policy and validation script drift checks synchronized with actual workflow. |
 
 ## Required CI Status Checks
-- Require successful run of `scripts/validate.ps1` for pull requests targeting `dev` and `master`.
+- Require successful run of `scripts/validate.ps1` for pull requests targeting `dev` and `main`.
 - Require successful completion of `validate modernization status metadata` step in the validation stage.
 - Require successful completion of `validate markdown links` step in the validation stage.
 - Require successful completion of validation steps: `dotnet restore`, `dotnet build`, and `dotnet test`.
 - Keep diagnostics conformance coverage enforced through the existing test suite included in `dotnet test`.
-- Do not require a standalone delivery stage on `master` for this class-library repository.
+- Do not require a standalone delivery stage on `main` for this class-library repository.
 
 ## Required Branch Governance
 - Enforce contributor workflow: local branch pushed to remote branch, then pull request into `dev` only.
-- Enforce promotion workflow: `dev` pull requests into `master` only.
-- Disallow direct pushes to `dev` and `master` for non-owner users.
-- Require repository owner approval before completing `dev` -> `master` pull requests.
+- Enforce promotion workflow: `dev` pull requests into `main` only.
+- Disallow direct pushes to `dev` and `main` for non-owner users.
+- Require repository owner approval before completing `dev` -> `main` pull requests.
 
 ## Session Handoff / Resume Notes
 To continue from this exact checkpoint:

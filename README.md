@@ -114,13 +114,13 @@ When environment performance characteristics change, update threshold constants 
 ### Branch Governance Flow
 
 Repository governance follows:
-`local branch -> remote branch -> PR to dev -> PR to master`.
+`local branch -> remote branch -> PR to dev -> PR to main`.
 
 ### CI Validation Scope
 
 This repository uses CI for validation automation (restore/build/test and documentation guards).
 
-As a referenced class library, this repository does not require a standalone master-delivery pipeline.
+As a referenced class library, this repository does not require a standalone main-delivery pipeline.
 
 ## Usage
 
