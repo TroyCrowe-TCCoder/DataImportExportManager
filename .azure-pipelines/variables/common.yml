@@ -1,5 +1,0 @@
-variables:
-  buildConfiguration: 'Release'
-  solutionPath: 'DataImportExportManager.sln'
-  packageArtifactName: 'nuget-drop'
-  devNextBranch: 'main'

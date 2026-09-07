@@ -116,9 +116,6 @@ When environment performance characteristics change, update threshold constants 
 Repository governance follows:
 `local branch -> remote branch -> PR to dev -> PR to master`.
 
-For required Azure DevOps branch-policy settings and operator steps, see:
-`docs/standards/azure-devops-branch-policy-checklist.md`.
-
 ### CI Validation Scope
 
 This repository uses CI for validation automation (restore/build/test and documentation guards).

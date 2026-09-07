@@ -50,11 +50,10 @@ Latest session checkpoint outcomes:
 ## CI Guard Inventory (Current)
 - `validate modernization status metadata` -> `scripts/ci/Validate-ModernizationStatusMetadata.ps1`
 - `validate markdown links` -> `scripts/ci/Validate-MarkdownLinks.ps1`
-- `validate docs and pipeline contracts` -> `scripts/ci/Validate-DocsAndPipelineContracts.ps1`
 
 ## Maintenance Cadence
 - Per approved bundle: run guard scripts, `dotnet build`, and `dotnet test` before commit/push.
-- Weekly: verify branch policy configuration still matches `docs/standards/azure-devops-branch-policy-checklist.md`.
+- Weekly: verify branch protection rules still match `## Required Branch Governance` below.
 - Monthly: refresh this matrix checkpoint metadata (`Last updated`, `Latest commit`, validation counters) and re-run staleness audit scan.
 
 ## Status Matrix
@@ -71,18 +70,17 @@ Latest session checkpoint outcomes:
 | Testing and quality | Complete | Broad xUnit coverage including contract, integration-style DI tests, diagnostics conformance tests, docs-sync guards, and session-cache performance baseline tests; latest run `229/229`. | Maintain coverage parity for each new public API/diagnostic code. |
 | Observability and diagnostics | Complete | Structured diagnostics prefix (`[DIXMGR:...]`), centralized catalog (`ContractDiagnostics`), operation/code documentation, and conformance enforcement tests. | Keep catalog/tables/tests synchronized when adding codes. |
 | Performance and resilience | Complete (current scope) | Async import/export paths, size guards, deterministic parsing/export behavior, and existing performance-conscious implementation patterns retained. | Add targeted benchmarks only if regression signal appears. |
-| CI/CD and delivery | Complete (library scope) | Azure DevOps validation workflow at `.azure-pipelines/workflows/dataimportexportmanager-ci.yml` validates `feature/*`/`dev` flow and PRs; branch policies enforce PR-only promotion to `master` with no direct contributor pushes to `dev` or `master`. | Keep policy and validation script drift checks synchronized with actual workflow. |
+| CI/CD and delivery | Complete (library scope) | Local validation entry point at `scripts/validate.ps1` validates `feature/*`/`dev` flow and PRs; branch policies enforce PR-only promotion to `master` with no direct contributor pushes to `dev` or `master`. | Keep policy and validation script drift checks synchronized with actual workflow. |
 
-## Required CI Status Checks (Azure DevOps)
-- Require successful run of `dataimportexportmanager-ci.yml` validation stage for pull requests targeting `dev` and `master`.
+## Required CI Status Checks
+- Require successful run of `scripts/validate.ps1` for pull requests targeting `dev` and `master`.
 - Require successful completion of `validate modernization status metadata` step in the validation stage.
 - Require successful completion of `validate markdown links` step in the validation stage.
-- Require successful completion of `validate docs and pipeline contracts` drift guard step in the validation stage.
 - Require successful completion of validation steps: `dotnet restore`, `dotnet build`, and `dotnet test`.
 - Keep diagnostics conformance coverage enforced through the existing test suite included in `dotnet test`.
 - Do not require a standalone delivery stage on `master` for this class-library repository.
 
-## Required Branch Governance (Azure DevOps)
+## Required Branch Governance
 - Enforce contributor workflow: local branch pushed to remote branch, then pull request into `dev` only.
 - Enforce promotion workflow: `dev` pull requests into `master` only.
 - Disallow direct pushes to `dev` and `master` for non-owner users.
@@ -169,6 +167,5 @@ Add payload enrichers only if checklist item 5 fails in real consumer integratio
 - `docs/standards/repository-modernization-checklist.md`
 - `docs/standards/existing-repositories-rollout-execution-plan.md`
 - `docs/standards/targeted-repositories-modernization-backlog.md`
-- `docs/standards/azure-devops-branch-policy-checklist.md`
 - `docs/standards/consumer-integration-observation-record-template.md`
 - `docs/standards/consumer-integration-observation-record-2026-04-24.md`

@@ -23,7 +23,7 @@
 - Use event-based notifications that can be published back to the API for UI toast notifications, instead of hard-coded notification workflows.
 
 ## Project-Specific Deviations
-- Repository remote or hosting context: Azure DevOps Git repository (`origin`: `https://dev.azure.com/tcrowe0170/_git/DataImportExportManager`).
+- Repository remote or hosting context: GitHub repository (`origin`: `https://github.com/TroyCrowe-TCCoder/DataImportExportManager`).
 - Application purpose or bounded context: Utility class library for tabular data import/export between CSV and Excel (`.xlsx`) formats.
 - Tenant, platform, or cloud specifics: No tenant-bound runtime behavior in this repository; cloud concerns are handled by consuming applications.
 - Auth claim names or identity-provider specifics: Not applicable in this library (no authentication/authorization surface).
