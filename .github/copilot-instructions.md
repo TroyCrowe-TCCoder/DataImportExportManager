@@ -53,3 +53,16 @@
 - Example: cache only tenant-scoped configuration by `clientId`.
 - Example: do not cache content payloads.
 
+## Backlog
+Tracked here until the projects are set up with Agile work items. Items are not scheduled; do not start one without the owner's go-ahead.
+
+### Version 2.0.0: plugin split and cache removal (breaking)
+- Remove the session cache from the library. Libraries do not cache; the host keeps what it needs through RedisCacheManager, which is distributed only.
+  - Remove `IImportSchemaSessionCache`, `InMemoryImportSchemaSessionCache`, `DistributedImportSchemaSessionCache`, `DistributedImportSchemaSessionCacheOptions`, `AddImportSchemaSessionCache` and `AddDistributedImportSchemaSessionCache`.
+  - Remove the `Microsoft.Extensions.Caching.Abstractions` reference, the session cache tests, the performance baseline checks, and the related README, CHANGELOG and docs text.
+  - Remove the `ImportSchemaSession` contract only after confirming nothing else uses it.
+- Split into a core package plus one plugin package per format or datasource (CSV, JSON, NDJSON, XML, Excel, DOCX, text), in line with the other libraries.
+  - Each package ships its own `CONFIGURATION.md` with a drift test (ADR-0002).
+- Before starting, check whether the other 3 APIs or the UI use the session cache.
+- Versioning: major bump. 1.0.1 stays published.
+
