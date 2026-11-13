@@ -405,67 +405,7 @@ await router.CreateExampleImportFileAsync(
 
 ## Configuration Reference
 
-### `CsvImporterOptions`
-
-| Property | Default | Description |
-|----------|---------|-------------|
-| `Encoding` | UTF-8 | Text encoding for reading the stream |
-| `Delimiter` | `,` | Field separator character |
-
-### `CsvExporterOptions`
-
-| Property | Default | Description |
-|----------|---------|-------------|
-| `Encoding` | UTF-8 (no BOM) | Text encoding for writing the stream |
-| `Delimiter` | `,` | Field separator character |
-| `SanitizeFormulaCells` | `false` | Prefix formula-triggering chars (`=`,`+`,`-`,`@`,`\t`,`\r`) with `'` |
-
-### `ExcelImporterOptions`
-
-| Property | Default | Description |
-|----------|---------|-------------|
-| `MaxBufferSize` | 100 MB | Maximum bytes to buffer for non-seekable streams |
-| `SheetName` | `null` | Import a worksheet by name (case-insensitive); takes precedence over `SheetIndex` |
-| `SheetIndex` | `null` | Import a worksheet by zero-based index |
-
-### `JsonImporterOptions`
-
-| Property | Default | Description |
-|----------|---------|-------------|
-| `IncludeHeaderRowForObjectRecords` | `true` | For object-record JSON arrays, includes a synthesized deterministic header row |
-
-### `JsonExporterOptions`
-
-| Property | Default | Description |
-|----------|---------|-------------|
-| `WriteIndented` | `false` | Writes indented JSON output when enabled |
-
-### `NdjsonImporterOptions`
-
-| Property | Default | Description |
-|----------|---------|-------------|
-| `IgnoreBlankLines` | `true` | Ignores blank/whitespace NDJSON lines; throws when disabled |
-
-### `NdjsonExporterOptions`
-
-| Property | Default | Description |
-|----------|---------|-------------|
-| `WriteTrailingNewline` | `true` | Writes a final trailing newline after last NDJSON record |
-
-### `XmlImporterOptions`
-
-| Property | Default | Description |
-|----------|---------|-------------|
-| `EnableObjectElementRows` | `true` | Enables importing rows like `<row><name>...</name></row>` |
-| `IncludeHeaderRowForObjectElementRows` | `true` | Includes synthesized header row when object-element rows are imported |
-| `RowSchemaMode` | `Auto` | `Auto`, `CellsOnly`, or `ObjectElementsOnly` strict schema contract |
-
-### `XmlExporterOptions`
-
-| Property | Default | Description |
-|----------|---------|-------------|
-| `UseObjectElementRows` | `false` | Exports using first row as header element names and subsequent row values as elements |
-| `StrictObjectElementRowWidth` | `false` | When object mode is enabled, enforces each data row width equals header count |
+Every option, its default, and whether it is required or secret is listed in [CONFIGURATION.md](CONFIGURATION.md). The file ships inside the NuGet package, and a test fails the build when it drifts from the options classes.
 
 ## Adding a New Format
 
